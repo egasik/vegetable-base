@@ -11,9 +11,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 // 1. Добавили 'role', 'avatar_path', 'card_data' в Fillable
-#[Fillable(['name', 'email', 'password', 'role', 'avatar_path', 'card_data'])]
+#[Fillable(['name', 'email', 'password', 'role', 'avatar_path'])]
 // 2. Добавили 'card_data' в Hidden, чтобы данные карты не утекли в API/JSON
-#[Hidden(['password', 'remember_token', 'card_data'])]
+#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -48,5 +48,9 @@ class User extends Authenticatable
     public function articles()
     {
         return $this->hasMany(Article::class, 'author_id');
+    }
+    public function card()
+    {
+        return $this->hasOne(UserCard::class);
     }
 }

@@ -46,6 +46,7 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('profile.edit', absolute: false))
+    ->with('success', '🎉 Регистрация прошла успешно! Добро пожаловать в Овощную базу!');
     }
 }

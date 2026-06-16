@@ -14,7 +14,6 @@ return new class extends Migration {
             $table->string('password');
             $table->enum('role', ['guest', 'user', 'admin'])->default('guest');
             $table->string('avatar_path')->nullable();
-            $table->string('card_data')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

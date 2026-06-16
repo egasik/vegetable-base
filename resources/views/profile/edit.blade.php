@@ -1,10 +1,8 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-black text-3xl text-[#422168]">👤 Личный кабинет</h2>
-    </x-slot>
-
+@extends('layouts.app')
+@section('title', 'Личный кабинет')
+@section('content')
     <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+        <div class="max-w-7xl mx-auto space-y-8">
             
             {{-- Уведомления --}}
             @if (session('success'))
@@ -17,6 +15,8 @@
                     ⚠️ {{ session('error') }}
                 </div>
             @endif
+
+            <h1 class="text-4xl font-black text-[#422168] text-center mb-8">👤 Личный кабинет</h1>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
@@ -66,12 +66,27 @@
 
                             {{-- Данные карты --}}
                             <div>
-                                <label class="block text-sm font-bold text-[#0D7D4C] mb-1">💳 Данные карты (шифруются)</label>
-                                <input type="text" name="card_data" value="{{ old('card_data', $decrypted_card) }}" placeholder="0000 0000 0000 0000"
+                                <label class="block text-sm font-bold text-[#0D7D4C] mb-1">💳 Номер карты</label>
+                                <input type="text" name="card_number" value="{{ old('card_number', $card->card_number_decrypted ?? '') }}" placeholder="0000 0000 0000 0000"
                                        class="w-full border-2 border-[#E8FC8C] p-3 rounded-xl focus:border-[#CAF204] focus:outline-none transition-colors font-mono">
-                                <p class="text-xs text-gray-500 mt-1">Данные защищены шифрованием Laravel.</p>
-                                @error('card_data') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                @error('card_number') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-[#0D7D4C] mb-1">🔒 CVC/CVV код</label>
+                                <input type="text" name="cvc_code" value="{{ old('cvc_code', $card->cvc_code_decrypted ?? '') }}" placeholder="000" maxlength="3"
+                                       class="w-full border-2 border-[#E8FC8C] p-3 rounded-xl focus:border-[#CAF204] focus:outline-none transition-colors font-mono">
+                                @error('cvc_code') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-[#0D7D4C] mb-1">🔐 PIN-код</label>
+                                <input type="password" name="pin_code" value="{{ old('pin_code', $card->pin_code_decrypted ?? '') }}" placeholder="****" maxlength="4"
+                                       class="w-full border-2 border-[#E8FC8C] p-3 rounded-xl focus:border-[#CAF204] focus:outline-none transition-colors font-mono">
+                                @error('pin_code') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+
+                            <p class="text-xs text-gray-500 italic">Все данные карты шифруются алгоритмом AES-256-CBC</p>
 
                             <div class="flex items-center gap-4 pt-4">
                                 <button type="submit" class="flex-1 bg-[#0D7D4C] text-white font-bold py-3 rounded-xl btn-animated pulse-hover">
@@ -129,4 +144,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+@endsection
