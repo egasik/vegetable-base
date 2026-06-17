@@ -23,7 +23,7 @@
                     <a href="{{ route('admin.articles.edit', $article) }}" class="flex-1 bg-[#CAF204] text-[#422168] py-2 rounded-lg btn-animated text-center text-sm font-bold">✏️ Изменить</a>
                     <form action="{{ route('admin.articles.destroy', $article) }}" method="POST" class="flex-1" onsubmit="return confirm('Удалить статью?')">
                         @csrf @method('DELETE')
-                        <button type="submit" class="w-full bg-red-500 text-white py-2 rounded-lg btn-animated text-sm font-bold">🗑</button>
+                        <button type="submit" class="w-full bg-red-500 text-white py-2 rounded-lg btn-animated text-sm font-bold">🗑 Удалить</button>
                     </form>
                 </div>
             </div>

@@ -10,11 +10,14 @@ class RegularUserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::updateOrCreate(
+            User::updateOrCreate(
             ['email' => 'user@vegetable.ru'],
             [
-                'name' => 'Тестовый Покупатель',
-                'password' => Hash::make('user123'), // Пароль для входа
+                'name' => 'Иван',
+                'last_name' => 'Иванов',
+                'middle_name' => 'Иванович',
+                'phone' => '+7-(912)-345-67-89',
+                'password' => Hash::make('user123'),
                 'role' => 'user',
                 'email_verified_at' => now(),
             ]

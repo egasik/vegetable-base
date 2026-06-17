@@ -16,7 +16,7 @@
                 </div>
             @endif
 
-            <h1 class="text-4xl font-black text-[#422168] text-center mb-8">👤 Личный кабинет</h1>
+            <h1 class="text-4xl font-black text-[#422168] text-center mb-8"> Личный кабинет</h1>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
@@ -64,29 +64,40 @@
                                 @error('email') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
 
-                            {{-- Данные карты --}}
-                            <div>
-                                <label class="block text-sm font-bold text-[#0D7D4C] mb-1">💳 Номер карты</label>
-                                <input type="text" name="card_number" value="{{ old('card_number', $card->card_number_decrypted ?? '') }}" placeholder="0000 0000 0000 0000"
-                                       class="w-full border-2 border-[#E8FC8C] p-3 rounded-xl focus:border-[#CAF204] focus:outline-none transition-colors font-mono">
-                                @error('card_number') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
+                                                        {{-- Данные карты --}}
+                            <div class="space-y-4 bg-[#E8FC8C]/20 p-4 rounded-xl border-2 border-[#E8FC8C]">
+                                <h4 class="font-bold text-[#0D7D4C] text-sm"> Данные банковской карты</h4>
+                                
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-[#422168]">Номер карты</label>
+                                    <input type="text" name="card_number" id="card-number" 
+                                           value="{{ old('card_number', $card->card_number_decrypted ?? '') }}" 
+                                           placeholder="0000 0000 0000 0000"
+                                           class="w-full border-2 border-[#E8FC8C] p-3 rounded-lg focus:border-[#CAF204] focus:outline-none transition-colors font-mono tracking-wider">
+                                    @error('card_number') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                </div>
 
-                            <div>
-                                <label class="block text-sm font-bold text-[#0D7D4C] mb-1">🔒 CVC/CVV код</label>
-                                <input type="text" name="cvc_code" value="{{ old('cvc_code', $card->cvc_code_decrypted ?? '') }}" placeholder="000" maxlength="3"
-                                       class="w-full border-2 border-[#E8FC8C] p-3 rounded-xl focus:border-[#CAF204] focus:outline-none transition-colors font-mono">
-                                @error('cvc_code') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-bold mb-1 text-[#422168]">CVC/CVV код</label>
+                                        <input type="text" name="cvc_code" id="cvc-code" 
+                                               value="{{ old('cvc_code', $card->cvc_code_decrypted ?? '') }}" 
+                                               placeholder="000" maxlength="3"
+                                               class="w-full border-2 border-[#E8FC8C] p-3 rounded-lg focus:border-[#CAF204] focus:outline-none transition-colors font-mono text-center">
+                                        @error('cvc_code') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    </div>
 
-                            <div>
-                                <label class="block text-sm font-bold text-[#0D7D4C] mb-1">🔐 PIN-код</label>
-                                <input type="password" name="pin_code" value="{{ old('pin_code', $card->pin_code_decrypted ?? '') }}" placeholder="****" maxlength="4"
-                                       class="w-full border-2 border-[#E8FC8C] p-3 rounded-xl focus:border-[#CAF204] focus:outline-none transition-colors font-mono">
-                                @error('pin_code') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    <div>
+                                        <label class="block text-xs font-bold mb-1 text-[#422168]">PIN-код</label>
+                                        <input type="text" name="pin_code" id="pin-code" 
+                                               value="{{ old('pin_code', $card->pin_code_decrypted ?? '') }}" 
+                                               placeholder="0000" maxlength="4"
+                                               class="w-full border-2 border-[#E8FC8C] p-3 rounded-lg focus:border-[#CAF204] focus:outline-none transition-colors font-mono text-center">
+                                        @error('pin_code') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                    </div>
+                                </div>
+                                </div>
                             </div>
-
-                            <p class="text-xs text-gray-500 italic">Все данные карты шифруются алгоритмом AES-256-CBC</p>
 
                             <div class="flex items-center gap-4 pt-4">
                                 <button type="submit" class="flex-1 bg-[#0D7D4C] text-white font-bold py-3 rounded-xl btn-animated pulse-hover">
@@ -100,7 +111,7 @@
                 {{-- ПРАВАЯ КОЛОНКА: История заказов --}}
                 <div class="lg:col-span-2">
                     <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-[#E8FC8C]">
-                        <h3 class="text-2xl font-black text-[#422168] mb-6 border-b-4 border-[#00F3B5] pb-2">📦 История заказов</h3>
+                        <h3 class="text-2xl font-black text-[#422168] mb-6 border-b-4 border-[#00F3B5] pb-2"> История заказов</h3>
                         
                         @if($orders->isEmpty())
                             <div class="text-center py-12 bg-[#E8FC8C]/30 rounded-2xl">
@@ -126,7 +137,14 @@
                                         <div class="space-y-2 mt-4 border-t border-[#422168]/10 pt-3">
                                             @foreach($order->items as $item)
                                                 <div class="flex justify-between text-sm">
-                                                    <span class="text-[#422168] font-bold">{{ $item->product->name }}</span>
+                                                    <span class="text-[#422168] font-bold">
+    {{ $item->product->name }} 
+    @if($item->price_at_moment == $item->product->wholesale_price)
+        <span class="text-xs bg-[#422168] text-[#CAF204] px-2 py-0.5 rounded ml-2">ОПТ (мешок {{ $item->product->wholesale_unit_kg }} кг)</span>
+    @else
+        <span class="text-xs bg-[#00F3B5] text-[#422168] px-2 py-0.5 rounded ml-2">Розница (за кг)</span>
+    @endif
+</span>
                                                     <span class="text-gray-600">{{ $item->quantity }} шт. × {{ $item->price_at_moment }} ₽</span>
                                                 </div>
                                             @endforeach
@@ -144,4 +162,47 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/imask@7.1.3/dist/imask.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Маска для номера карты: XXXX XXXX XXXX XXXX
+    const cardNumberInput = document.getElementById('card-number');
+    if (cardNumberInput) {
+        IMask(cardNumberInput, {
+            mask: '0000 0000 0000 0000',
+            lazy: false,
+            overwrite: true,
+            definitions: {
+                '0': /[0-9]/
+            }
+        });
+    }
+
+    // Маска для CVC: 000
+    const cvcInput = document.getElementById('cvc-code');
+    if (cvcInput) {
+        IMask(cvcInput, {
+            mask: '000',
+            lazy: false,
+            overwrite: true,
+            definitions: {
+                '0': /[0-9]/
+            }
+        });
+    }
+
+    // Маска для PIN: 0000
+    const pinInput = document.getElementById('pin-code');
+    if (pinInput) {
+        IMask(pinInput, {
+            mask: '0000',
+            lazy: false,
+            overwrite: true,
+            definitions: {
+                '0': /[0-9]/
+            }
+        });
+    }
+});
+</script>
 @endsection

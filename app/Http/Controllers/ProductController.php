@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Http\Request;
@@ -18,16 +20,16 @@ class ProductController extends Controller
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
         }
-        // Фильтр по цене
+        // Фильтр по розничной цене
         if ($request->filled('min_price')) {
-            $query->where('price', '>=', $request->min_price);
+            $query->where('retail_price', '>=', $request->min_price);
         }
         if ($request->filled('max_price')) {
-            $query->where('price', '<=', $request->max_price);
+            $query->where('retail_price', '<=', $request->max_price);
         }
 
-        $products = $query->paginate(9)->withQueryString(); // Сохраняем фильтры в пагинации
-        $categories = Category::all(); // Для выпадающего списка фильтров
+        $products = $query->paginate(9)->withQueryString();
+        $categories = Category::all();
 
         return view('products.index', compact('products', 'categories'));
     }

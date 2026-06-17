@@ -38,7 +38,16 @@
                                 {{ $product->category->name }}
                             </span>
                         </td>
-                        <td class="p-4 text-[#0D7D4C] font-black">{{ $product->price }} ₽</td>
+                        <td class="p-4 text-[#0D7D4C] font-black">
+    @if($product->is_retail)
+        <div>Розница: {{ $product->retail_price }} ₽/кг</div>
+    @endif
+    @if($product->is_wholesale)
+        <div class="text-sm text-[#422168] font-bold mt-1">
+            Опт: {{ $product->wholesale_price }} ₽ ({{ $product->wholesale_unit_kg }} кг)
+        </div>
+    @endif
+</td>
                         <td class="p-4 text-right space-x-2">
                             <a href="{{ route('admin.products.edit', $product) }}" class="bg-[#CAF204] text-[#422168] px-4 py-2 rounded-lg btn-animated text-sm font-bold">✏️ Изменить</a>
                             <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="inline" onsubmit="return confirm('Удалить товар?')">

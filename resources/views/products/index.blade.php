@@ -36,15 +36,31 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         @forelse($products as $product)
             <div class="bg-white rounded-2xl shadow-md overflow-hidden card-hover border-b-8 border-[#CAF204]">
-                <div class="h-48 bg-[#E8FC8C] flex items-center justify-center text-7xl">
-                    🍅
+                                <div class="h-48 bg-[#E8FC8C] flex items-center justify-center overflow-hidden">
+                    @if($product->image_path)
+                        <img src="{{ asset('storage/' . $product->image_path) }}" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                    @else
+                        <span class="text-7xl">🍅</span>
+                    @endif
                 </div>
                 <div class="p-6">
                     <span class="text-xs font-bold text-[#00F3B5] uppercase tracking-wider">{{ $product->category->name }}</span>
                     <h3 class="text-xl font-bold mt-1 mb-2 text-[#422168]">{{ $product->name }}</h3>
                     <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ Str::limit($product->description, 60) }}</p>
                     <div class="flex justify-between items-center">
-                        <span class="text-2xl font-black text-[#0D7D4C]">{{ $product->price }} ₽</span>
+                        <div class="flex flex-col gap-1 mb-4">
+    @if($product->is_retail)
+        <span class="text-2xl font-black text-[#0D7D4C]">
+            {{ $product->retail_price }} ₽ <span class="text-sm font-normal text-gray-500">/ кг</span>
+        </span>
+    @endif
+    
+    @if($product->is_wholesale)
+        <span class="text-xs font-bold text-[#422168] bg-[#E8FC8C] px-2 py-1 rounded inline-block w-max">
+            📦 Опт: {{ $product->wholesale_price }} ₽ за {{ $product->wholesale_unit_kg }} кг
+        </span>
+    @endif
+</div>
                         <a href="{{ route('product.show', $product) }}" class="bg-[#422168] text-white px-4 py-2 rounded-lg btn-animated text-sm">
                             Купить
                         </a>
