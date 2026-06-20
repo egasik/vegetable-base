@@ -18,13 +18,14 @@
 
             <h1 class="text-4xl font-black text-[#422168] text-center mb-8"> Личный кабинет</h1>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 
                 {{-- ЛЕВАЯ КОЛОНКА: Профиль --}}
                 <div class="lg:col-span-1">
-                    <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-[#E8FC8C]">
+                    <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-[#E8FC8C] sticky top-24">
                         <h3 class="text-2xl font-black text-[#422168] mb-6 border-b-4 border-[#CAF204] pb-2">Настройки профиля</h3>
                         
+                        {{-- Форма профиля (без изменений) --}}
                         <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="space-y-5">
                             @csrf
                             @method('patch')
@@ -56,6 +57,22 @@
                                 @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
 
+                            {{-- Фамилия --}}
+                            <div>
+                                <label class="block text-sm font-bold text-[#0D7D4C] mb-1">Фамилия</label>
+                                <input type="text" name="last_name" value="{{ old('last_name', $user->last_name) }}" required
+                                       class="w-full border-2 border-[#E8FC8C] p-3 rounded-xl focus:border-[#CAF204] focus:outline-none transition-colors">
+                                @error('last_name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+
+                            {{-- Отчество --}}
+                            <div>
+                                <label class="block text-sm font-bold text-[#0D7D4C] mb-1">Отчество</label>
+                                <input type="text" name="middle_name" value="{{ old('middle_name', $user->middle_name) }}"
+                                       class="w-full border-2 border-[#E8FC8C] p-3 rounded-xl focus:border-[#CAF204] focus:outline-none transition-colors">
+                                @error('middle_name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+
                             {{-- Email --}}
                             <div>
                                 <label class="block text-sm font-bold text-[#0D7D4C] mb-1">Email</label>
@@ -64,44 +81,19 @@
                                 @error('email') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
 
-                                                        {{-- Данные карты --}}
-                            <div class="space-y-4 bg-[#E8FC8C]/20 p-4 rounded-xl border-2 border-[#E8FC8C]">
-                                <h4 class="font-bold text-[#0D7D4C] text-sm"> Данные банковской карты</h4>
-                                
-                                <div>
-                                    <label class="block text-xs font-bold mb-1 text-[#422168]">Номер карты</label>
-                                    <input type="text" name="card_number" id="card-number" 
-                                           value="{{ old('card_number', $card->card_number_decrypted ?? '') }}" 
-                                           placeholder="0000 0000 0000 0000"
-                                           class="w-full border-2 border-[#E8FC8C] p-3 rounded-lg focus:border-[#CAF204] focus:outline-none transition-colors font-mono tracking-wider">
-                                    @error('card_number') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="block text-xs font-bold mb-1 text-[#422168]">CVC/CVV код</label>
-                                        <input type="text" name="cvc_code" id="cvc-code" 
-                                               value="{{ old('cvc_code', $card->cvc_code_decrypted ?? '') }}" 
-                                               placeholder="000" maxlength="3"
-                                               class="w-full border-2 border-[#E8FC8C] p-3 rounded-lg focus:border-[#CAF204] focus:outline-none transition-colors font-mono text-center">
-                                        @error('cvc_code') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-xs font-bold mb-1 text-[#422168]">PIN-код</label>
-                                        <input type="text" name="pin_code" id="pin-code" 
-                                               value="{{ old('pin_code', $card->pin_code_decrypted ?? '') }}" 
-                                               placeholder="0000" maxlength="4"
-                                               class="w-full border-2 border-[#E8FC8C] p-3 rounded-lg focus:border-[#CAF204] focus:outline-none transition-colors font-mono text-center">
-                                        @error('pin_code') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                    </div>
-                                </div>
-                                </div>
+                            {{-- Телефон --}}
+                            <div>
+                                <label class="block text-sm font-bold text-[#0D7D4C] mb-1">Телефон</label>
+                                <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" required
+                                       class="w-full border-2 border-[#E8FC8C] p-3 rounded-xl focus:border-[#CAF204] focus:outline-none transition-colors font-mono">
+                                @error('phone') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
+
+                            
 
                             <div class="flex items-center gap-4 pt-4">
                                 <button type="submit" class="flex-1 bg-[#0D7D4C] text-white font-bold py-3 rounded-xl btn-animated pulse-hover">
-                                    💾 Сохранить изменения
+                                     Сохранить изменения
                                 </button>
                             </div>
                         </form>
@@ -128,27 +120,32 @@
                                                 <p class="text-sm text-gray-500">Заказ №{{ $order->id }} от {{ $order->created_at->format('d.m.Y H:i') }}</p>
                                                 <p class="text-2xl font-black text-[#422168] mt-1">{{ $order->total_amount }} ₽</p>
                                             </div>
-                                            <span class="px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider 
-                                                {{ $order->status === 'completed' ? 'bg-[#00F3B5] text-[#422168]' : 'bg-[#CAF204] text-[#422168]' }}">
-                                                {{ $order->status === 'completed' ? 'Выполнен' : 'В обработке' }}
-                                            </span>
+                                            <div class="text-right">
+                                                <span class="px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider 
+                                                    {{ $order->status === 'completed' ? 'bg-[#00F3B5] text-[#422168]' : 'bg-[#CAF204] text-[#422168]' }}">
+                                                    {{ $order->status === 'completed' ? '✅ Оплачен' : 'Ожидает оплаты' }}
+                                                </span>
+                                                @if($order->status !== 'completed')
+                                                    <a href="{{ route('payment.show', $order) }}" class="block mt-2 bg-[#0D7D4C] text-white px-4 py-2 rounded-lg btn-animated text-xs font-bold">
+                                                         Оплатить
+                                                    </a>
+                                                @endif
+                                            </div>
                                         </div>
                                         
                                         <div class="space-y-2 mt-4 border-t border-[#422168]/10 pt-3">
-                                            @foreach($order->items as $item)
-                                                <div class="flex justify-between text-sm">
-                                                    <span class="text-[#422168] font-bold">
-    {{ $item->product->name }} 
-    @if($item->price_at_moment == $item->product->wholesale_price)
-        <span class="text-xs bg-[#422168] text-[#CAF204] px-2 py-0.5 rounded ml-2">ОПТ (мешок {{ $item->product->wholesale_unit_kg }} кг)</span>
-    @else
-        <span class="text-xs bg-[#00F3B5] text-[#422168] px-2 py-0.5 rounded ml-2">Розница (за кг)</span>
-    @endif
-</span>
-                                                    <span class="text-gray-600">{{ $item->quantity }} шт. × {{ $item->price_at_moment }} ₽</span>
-                                                </div>
-                                            @endforeach
-                                        </div>
+                                        @foreach($order->items as $item)
+                                            <div class="flex justify-between text-sm">
+                                                {{-- ВАЖНО: используем product_name, а не product->name --}}
+                                                <span class="text-[#422168] font-bold">
+                                                    {{ $item->product_name ?? 'Товар' }}
+                                                </span>
+                                                <span class="text-gray-600">
+                                                    {{ $item->quantity }} шт. × {{ $item->price_at_moment }} ₽
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                     </div>
                                 @endforeach
                             </div>

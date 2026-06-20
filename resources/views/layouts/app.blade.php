@@ -61,11 +61,20 @@
         <nav class="header-gradient p-4 text-white shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <a href="{{ route('home') }}" class="text-2xl font-black tracking-tight hover:text-[#CAF204] transition-colors duration-300">
-                🥬 Овощная база
+                 Овощная база
             </a>
             <div class="flex items-center space-x-6 font-semibold">
                 <a href="{{ route('catalog') }}" class="hover:text-[#00F3B5] transition-colors duration-300">Каталог</a>
-                <a href="{{ route('articles.index') }}" class="hover:text-[#00F3B5] transition-colors duration-300">📖 Справочник</a>
+                <a href="{{ route('articles.index') }}" class="hover:text-[#00F3B5] transition-colors duration-300">Справочник</a>
+                @auth
+                <a href="{{ route('cart.index') }}" class="relative hover:text-[#00F3B5] transition-colors duration-300">Корзина
+        @if(session('cart') && count(session('cart')) > 0)
+            <span class="absolute -top-2 -right-2 bg-[#CAF204] text-[#422168] text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {{ count(session('cart')) }}
+            </span>
+        @endif
+                </a>
+                @endauth
                 
                 @auth
                     {{-- Блок профиля пользователя --}}

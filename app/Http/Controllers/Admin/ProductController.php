@@ -67,12 +67,25 @@ class ProductController extends Controller
         return redirect()->route('admin.products.index')->with('success', 'Товар обновлён!');
     }
 
-    public function destroy(Product $product)
-    {
-        if ($product->image_path) {
-            Storage::disk('public')->delete($product->image_path);
-        }
-        $product->delete();
-        return redirect()->route('admin.products.index')->with('success', 'Товар удалён!');
+        public function destroy(Product $product)
+{
+    // Проверяем активные заказы (без учёта удалённых)
+    $activeOrdersCount = DB::table('order_items')
+        ->join('orders', 'order_items.order_id', '=', 'orders.id')
+        ->where('order_items.product_id', $product->id)
+        ->whereIn('orders.status', Order::ACTIVE_STATUSES)
+        ->whereNull('orders.deleted_at') // Исключаем удалённые заказы
+        ->count();
+
+    if ($activeOrdersCount > 0) {
+        return back()->with('error', 
+            "Нельзя удалить товар «{$product->name}»: он присутствует в {$activeOrdersCount} активных заказах."
+        );
     }
+
+    $product->delete();
+
+    return redirect()->route('admin.products.index')
+        ->with('success', "Товар «{$product->name}» удалён из каталога");
+}
 }

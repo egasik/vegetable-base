@@ -10,7 +10,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with('category');
+        $query = Product::with('category')->whereNull('deleted_at');
 
         // Поиск по названию
         if ($request->filled('search')) {

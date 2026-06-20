@@ -19,7 +19,7 @@
                 </div>
                 <div class="p-6">
                     <h3 class="text-xl font-black text-[#422168] mb-2">{{ $article->title }}</h3>
-                    <p class="text-sm text-gray-500">{{ $article->created_at->format('d.m.Y') }} · Блоков: {{ $article->blocks->count() }}</p>
+                    <p class="text-sm text-gray-500">{{ $article->created_at->format('d.m.Y') }} </p>
                 </div>
             </a>
         @empty

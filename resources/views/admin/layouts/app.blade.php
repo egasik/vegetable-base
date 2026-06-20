@@ -43,32 +43,67 @@
 </head>
 <body class="bg-[#E8FC8C] text-[#422168] min-h-screen flex">
     <!-- Боковое меню -->
-    <aside class="w-64 bg-[#422168] text-white min-h-screen shadow-2xl">
-        <div class="p-6 border-b border-[#0D7D4C]">
-            <h1 class="text-2xl font-black text-[#CAF204]">🥬 Админ-панель</h1>
-            <p class="text-xs text-[#00F3B5] mt-1">Овощная база</p>
+    <!-- Боковое меню -->
+<aside class="w-64 bg-[#422168] text-white min-h-screen shadow-2xl">
+    <div class="p-6 border-b border-[#0D7D4C]">
+        <h1 class="text-2xl font-black text-[#CAF204]">Админ-панель</h1>
+        <p class="text-xs text-[#00F3B5] mt-1">Овощная база</p>
+        
+        {{-- Профиль администратора --}}
+        <div class="mt-4 flex items-center space-x-3">
+            <div class="w-12 h-12 rounded-full bg-[#E8FC8C] flex items-center justify-center text-2xl overflow-hidden border-2 border-[#CAF204]">
+                @if(auth()->user()->avatar_path)
+                    <img src="{{ asset('storage/' . auth()->user()->avatar_path) }}" class="w-full h-full object-cover">
+                @else
+                    👤
+                @endif
+            </div>
+            <div>
+                <p class="text-sm font-bold text-white">{{ auth()->user()->name }} {{ auth()->user()->last_name }}</p>
+                <p class="text-xs text-[#CAF204]">Администратор</p>
+            </div>
         </div>
-        <nav class="p-4 space-y-2">
-            <a href="{{ route('home') }}" target="_blank" class="sidebar-link block py-3 px-4 rounded-lg text-[#E8FC8C]">
-                🌐 На сайт
+    </div>
+
+    {{-- Навигация --}}
+    <nav class="mt-6">
+        <a href="{{ route('admin.products.index') }}" class="block px-6 py-3 text-white hover:bg-[#0D7D4C] transition-colors font-semibold {{ request()->routeIs('admin.products.*') ? 'bg-[#0D7D4C]' : '' }}">
+            Товары
+        </a>
+        
+        <a href="{{ route('admin.categories.index') }}" class="block px-6 py-3 text-white hover:bg-[#0D7D4C] transition-colors font-semibold {{ request()->routeIs('admin.categories.*') ? 'bg-[#0D7D4C]' : '' }}">
+            Категории
+        </a>
+        
+        <a href="{{ route('admin.orders.index') }}" class="block px-6 py-3 text-white hover:bg-[#0D7D4C] transition-colors font-semibold {{ request()->routeIs('admin.orders.*') ? 'bg-[#0D7D4C]' : '' }}">
+            Заказы
+            @php
+               $pendingOrders = \App\Models\Order::whereIn('status', ['pending', 'paid', 'shipping'])->count();
+            @endphp
+            @if($pendingOrders > 0)
+                <span class="ml-2 bg-[#CAF204] text-[#422168] text-xs font-bold px-2 py-1 rounded-full">
+                    {{ $pendingOrders }}
+                </span>
+            @endif
+        </a>
+        
+        <a href="{{ route('admin.articles.index') }}" class="block px-6 py-3 text-white hover:bg-[#0D7D4C] transition-colors font-semibold {{ request()->routeIs('admin.articles.*') ? 'bg-[#0D7D4C]' : '' }}">
+            Статьи
+        </a>
+        
+        <div class="border-t border-[#0D7D4C] mt-4 pt-4">
+            <a href="{{ route('home') }}" class="block px-6 py-3 text-white hover:bg-[#0D7D4C] transition-colors font-semibold">
+                ← На сайт
             </a>
-            <a href="{{ route('admin.products.index') }}" class="sidebar-link block py-3 px-4 rounded-lg {{ request()->routeIs('admin.products.*') ? 'active text-[#422168] font-bold' : 'text-[#E8FC8C]' }}">
-                🥕 Товары
-            </a>
-            <a href="{{ route('admin.categories.index') }}" class="sidebar-link block py-3 px-4 rounded-lg {{ request()->routeIs('admin.categories.*') ? 'active text-[#422168] font-bold' : 'text-[#E8FC8C]' }}">
-                📂 Категории
-            </a>
-            <a href="{{ route('admin.articles.index') }}" class="sidebar-link block py-3 px-4 rounded-lg {{ request()->routeIs('admin.articles.*') ? 'active text-[#422168] font-bold' : 'text-[#E8FC8C]' }}">
-                📖 Справочник
-            </a>
-            <form action="{{ route('logout') }}" method="POST" class="mt-8">
+            <form action="{{ route('logout') }}" method="POST">
                 @csrf
-                <button type="submit" class="w-full sidebar-link py-3 px-4 rounded-lg text-[#E8FC8C] text-left">
-                    🚪 Выйти
+                <button type="submit" class="w-full text-left px-6 py-3 text-red-300 hover:bg-red-900/30 transition-colors font-semibold">
+                    Выйти
                 </button>
             </form>
-        </nav>
-    </aside>
+        </div>
+    </nav>
+</aside>
 
     <!-- Основной контент -->
     <main class="flex-1 p-8">
