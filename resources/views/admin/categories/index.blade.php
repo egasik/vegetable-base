@@ -2,7 +2,7 @@
 @section('title', 'Категории')
 @section('content')
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-4xl font-black text-[#422168]">📂 Управление категориями</h1>
+        <h1 class="text-4xl font-black text-[#422168]"> Управление категориями</h1>
         <a href="{{ route('admin.categories.create') }}" class="bg-[#CAF204] text-[#422168] px-6 py-3 rounded-xl font-bold btn-animated">
             + Добавить категорию
         </a>

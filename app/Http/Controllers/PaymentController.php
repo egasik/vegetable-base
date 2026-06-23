@@ -180,7 +180,7 @@ class PaymentController extends Controller
                 // Обновляем статус заказа на основе ответа ЮKassa
                 if ($payment['status'] === 'succeeded') {
                     $order->update([
-                        'status' => 'completed',
+                        'status' => 'paid',
                         'paid_at' => now(),
                     ]);
                 } elseif ($payment['status'] === 'canceled') {
@@ -222,7 +222,7 @@ class PaymentController extends Controller
                 
                 if ($order && $order->payment_id === $paymentId) {
                     $order->update([
-                        'status' => 'completed',
+                        'status' => 'paid',
                         'paid_at' => now(),
                     ]);
                 }
@@ -256,7 +256,7 @@ public function checkStatus(Order $order)
             
             if ($payment['status'] === 'succeeded') {
                 $order->update([
-                    'status' => 'completed',
+                    'status' => 'paid',
                     'paid_at' => now(),
                 ]);
                 return back()->with('success', '✅ Статус обновлен: заказ оплачен!');

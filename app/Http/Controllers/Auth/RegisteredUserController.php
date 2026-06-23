@@ -28,43 +28,43 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
-            public function store(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255', 'regex:/^[А-ЯЁ][а-яА-ЯёЁ]*$/u'],
-            'last_name' => ['required', 'string', 'max:255', 'regex:/^[А-ЯЁ][а-яА-ЯёЁ]*$/u'],
-            'middle_name' => ['nullable', 'string', 'max:255', 'regex:/^[А-ЯЁ][а-яА-ЯёЁ]*$/u'],
-            'phone' => ['required', 'string', 'regex:/^\+7-\(\d{3}\)-\d{3}-\d{2}-\d{2}$/'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => [
-                'required', 
-                'string', 
-                'min:8', 
-                'confirmed',
-                'regex:/[a-zA-Z]/',      // Минимум 1 буква (русская или английская)
-                'regex:/[0-9]/',                 // Минимум 1 цифра
-                'regex:/[@$!%*#?&]/',            // Минимум 1 спецсимвол
-            ],
-        ], [
-            'name.regex' => 'Имя должно начинаться с заглавной буквы и содержать только буквы.',
-            'last_name.regex' => 'Фамилия должна начинаться с заглавной буквы и содержать только буквы.',
-            'middle_name.regex' => 'Отчество должно начинаться с заглавной буквы и содержать только буквы.',
-            'phone.regex' => 'Номер телефона должен быть в формате +7-(ХXX)-XXX-XX-XX',
-        ]);
+           public function store(Request $request): RedirectResponse
+{
+    $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'last_name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+        'phone' => ['required', 'string', 'max:20'],
+        'password' => ['required', 'confirmed', 'min:8'],
+    ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'last_name' => $request->last_name,
-            'middle_name' => $request->middle_name,
-            'phone' => $request->phone,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+    // Создаём пользователя БЕЗ подтверждения email
+    $user = User::create([
+        'name' => $request->name,
+        'last_name' => $request->last_name,
+        'email' => $request->email,
+        'phone' => $request->phone,
+        'password' => Hash::make($request->password),
+        'email_verified_at' => null, // Явно указываем, что не подтверждён
+    ]);
 
-        event(new Registered($user));
-        Auth::login($user);
-
-        return redirect(route('profile.edit', absolute: false))
-            ->with('success', '🎉 Регистрация прошла успешно! Добро пожаловать в Овощную базу!');
+    // Генерируем код подтверждения
+    $code = \App\Models\VerificationCode::createForUser($user->id, 'email_confirm');
+    
+    // Отправляем код на email
+    try {
+        \Illuminate\Support\Facades\Mail::to($user->email)->send(
+            new \App\Mail\VerificationCodeMail($code, $user->name, 'Подтверждение email')
+        );
+    } catch (\Exception $e) {
+        \Log::error('Ошибка отправки кода подтверждения: ' . $e->getMessage());
     }
+
+    // Логиним пользователя
+    Auth::login($user);
+
+    // Редирект на страницу подтверждения email
+    return redirect()->route('profile.verify-email')
+        ->with('success', 'Регистрация успешна! Код подтверждения отправлен на ' . $user->email);
+}
 }

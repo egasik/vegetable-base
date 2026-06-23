@@ -67,23 +67,7 @@
                         </div>
                     </label>
 
-                    {{-- СБП QR-код --}}
-                    <label class="block cursor-pointer group">
-                        <input type="radio" name="payment_method" value="sbp" 
-                               class="peer sr-only">
-                        <div class="p-5 rounded-2xl border-4 border-[#E8FC8C] bg-white transition-all
-                                    peer-checked:border-[#422168] peer-checked:bg-[#422168]/5
-                                    group-hover:border-[#CAF204] group-hover:shadow-lg">
-                            <div class="flex items-center gap-4">
-                                
-                                <div class="flex-1">
-                                    <p class="font-black text-lg text-[#422168]">СБП по QR-коду</p>
-                                    <p class="text-sm text-gray-600">Оплата через приложение банка</p>
-                                </div>
-                                <div class="w-6 h-6 rounded-full border-4 border-gray-300 peer-checked:border-[#422168] peer-checked:bg-[#422168]"></div>
-                            </div>
-                        </div>
-                    </label>
+                    
 
                     <button type="submit" class="w-full bg-[#0D7D4C] text-white font-black py-4 rounded-xl btn-animated pulse-hover hover:bg-[#422168] text-lg mt-6">
                         Перейти к оплате →
@@ -111,8 +95,7 @@
     
                 <div class="mt-6 p-4 bg-[#CAF204]/20 rounded-xl border-l-4 border-[#CAF204]">
                     <p class="text-xs text-[#422168]">
-                         <strong>Безопасная оплата</strong> через платежную систему Robokassa. 
-                        Данные вашей карты защищены шифрованием SSL.
+                        <strong>Другие способы оплаты на данный момент отсутствуют</strong>
                     </p>
                 </div>
             </div>

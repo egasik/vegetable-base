@@ -17,7 +17,7 @@
         <h2 class="text-3xl font-bold text-[#0D7D4C] mb-4">Упс! Овощи закончились</h2>
         <p class="text-[#422168] text-lg mb-8 max-w-md mx-auto">Страница, которую вы ищете, не существует или была перемещена. Возможно, она еще растет на грядке.</p>
         <a href="{{ route('home') }}" class="inline-block bg-[#0D7D4C] text-white font-black py-3 px-8 rounded-xl btn-animated text-lg">
-            🏠 Вернуться на главную
+             Вернуться на главную
         </a>
     </div>
 </body>

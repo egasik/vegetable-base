@@ -1,7 +1,7 @@
 @extends('admin.layouts.app')
 @section('title', 'Редактировать товар')
 @section('content')
-    <h1 class="text-4xl font-black text-[#422168] mb-6">✏️ Редактирование: {{ $product->name }}</h1>
+    <h1 class="text-4xl font-black text-[#422168] mb-6"> Редактирование: {{ $product->name }}</h1>
     <form action="{{ route('admin.products.update', $product) }}" method="POST" enctype="multipart/form-data" class="bg-white p-8 rounded-2xl shadow-xl max-w-2xl border-4 border-[#E8FC8C]">
         @csrf @method('PUT')
         @include('admin.products._form')

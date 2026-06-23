@@ -17,7 +17,7 @@
         <h2 class="text-3xl font-bold text-red-600 mb-4">Ошибка на сервере</h2>
         <p class="text-[#422168] text-lg mb-8 max-w-md mx-auto">Что-то пошло не так на нашей кухне. Мы уже работаем над исправлением.</p>
         <a href="{{ route('home') }}" class="inline-block bg-[#0D7D4C] text-white font-black py-3 px-8 rounded-xl btn-animated text-lg">
-            🏠 Вернуться на главную
+             Вернуться на главную
         </a>
     </div>
 </body>

@@ -2,9 +2,9 @@
 @section('title', 'Товары')
 @section('content')
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-4xl font-black text-[#422168]">🥕 Управление товарами</h1>
+        <h1 class="text-4xl font-black text-[#422168]"> Управление товарами</h1>
         <a href="{{ route('admin.products.create') }}" class="bg-[#CAF204] text-[#422168] px-6 py-3 rounded-xl font-bold btn-animated">
-            + Добавить товар
+             Добавить товар
         </a>
     </div>
 
@@ -49,10 +49,10 @@
     @endif
 </td>
                         <td class="p-4 text-right space-x-2">
-                            <a href="{{ route('admin.products.edit', $product) }}" class="bg-[#CAF204] text-[#422168] px-4 py-2 rounded-lg btn-animated text-sm font-bold">✏️ Изменить</a>
+                            <a href="{{ route('admin.products.edit', $product) }}" class="bg-[#CAF204] text-[#422168] px-4 py-2 rounded-lg btn-animated text-sm font-bold"> Изменить</a>
                             <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="inline" onsubmit="return confirm('Удалить товар?')">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg btn-animated text-sm font-bold">🗑 Удалить</button>
+                                <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg btn-animated text-sm font-bold"> Удалить</button>
                             </form>
                         </td>
                     </tr>

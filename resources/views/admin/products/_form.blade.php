@@ -40,7 +40,7 @@
                 <input type="hidden" name="is_wholesale" value="0">
                 <input type="checkbox" name="is_wholesale" value="1" {{ old('is_wholesale', $product->is_wholesale ?? false) ? 'checked' : '' }} 
                        class="w-5 h-5 accent-[#422168]" id="check_wholesale">
-                <span class="font-bold text-[#422168]">📦 Оптовая продажа (мешками)</span>
+                <span class="font-bold text-[#422168]"> Оптовая продажа (мешками)</span>
             </label>
             <div id="wholesale_fields" class="{{ old('is_wholesale', $product->is_wholesale ?? false) ? '' : 'opacity-50' }}">
                 <div class="flex gap-2 mb-2">
@@ -64,7 +64,7 @@
         </div>
     </div>
         <div>
-        <label class="block text-sm font-bold mb-1 text-[#0D7D4C]">📷 Фотография товара</label>
+        <label class="block text-sm font-bold mb-1 text-[#0D7D4C]"> Фотография товара</label>
         <input type="file" name="image" accept="image/jpeg,image/png,image/jpg,image/webp" 
                class="block w-full text-sm text-[#422168] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-[#CAF204] file:text-[#422168] hover:file:bg-[#00F3B5] cursor-pointer btn-animated border-2 border-[#E8FC8C] p-2 rounded-lg">
         <p class="text-xs text-gray-500 mt-1">Форматы: JPEG, PNG, WEBP. Макс. размер: 10 МБ.</p>
