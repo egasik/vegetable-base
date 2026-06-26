@@ -65,43 +65,46 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, Order $order)
 {
-    $newStatus = $request->input('status');
-    
-    // Валидация
-    $rules = [
+    $request->validate([
         'status' => 'required|in:pending,paid,shipping,delivered,cancelled',
+        'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:20480', // 20MB
         'comment' => 'nullable|string|max:500',
-    ];
-
-    // Если отмена — комментарий обязателен
-    if ($newStatus === Order::STATUS_CANCELLED) {
-        $rules['comment'] = 'required|string|max:500';
-    }
-
-    $request->validate($rules, [
-        'comment.required' => 'При отмене заказа необходимо указать причину отмены',
     ]);
 
     $oldStatus = $order->status;
+    $newStatus = $request->status;
 
     // Если статус не изменился
     if ($oldStatus === $newStatus) {
         return back()->with('info', 'Статус не изменился');
     }
 
-    // Определяем, является ли это откатом
-    $isRevert = $order->canRevert() && $newStatus === $order->previous_status;
-
     // Проверка возможности перехода
     if (!$order->canTransitionTo($newStatus)) {
         return back()->with('error', 
-            "Невозможно изменить статус с «{$order->status_label}» на «{$this->statusLabel($newStatus)}». " .
-            "Разрешенные переходы: " . $this->getAllowedTransitionsLabel($order)
+            "Невозможно изменить статус с «{$order->status_label}» на «{$this->statusLabel($newStatus)}»"
         );
     }
 
+    // Если статус "доставлено" — фото обязательно
+    if ($newStatus === 'delivered' && !$request->hasFile('photo')) {
+        return back()->with('error', 'При подтверждении доставки необходимо прикрепить фото');
+    }
+
+    // Загрузка фото если есть
+    if ($request->hasFile('photo')) {
+        $path = $request->file('photo')->store('delivery-photos', 'public');
+        
+        \App\Models\DeliveryPhoto::create([
+            'order_id' => $order->id,
+            'user_id' => Auth::id(),
+            'file_path' => $path,
+            'comment' => $request->comment,
+        ]);
+    }
+
     // Сохраняем историю
-    OrderStatusHistory::create([
+    \App\Models\OrderStatusHistory::create([
         'order_id' => $order->id,
         'changed_by' => Auth::id(),
         'old_status' => $oldStatus,
@@ -110,34 +113,18 @@ class OrderController extends Controller
     ]);
 
     // Обновляем заказ
-    if ($isRevert) {
-        // Это откат — previous_status НЕ меняем, чтобы можно было откатить ещё раз
-        $order->update([
-            'status' => $newStatus,
-            'status_changed_at' => now(),
-            // previous_status остаётся прежним
-        ]);
-    } else {
- 
-$order->update([
-    'status' => $newStatus,
-    'status_changed_at' => now(),
-    'previous_status' => $oldStatus,
-]);
+    $order->update([
+        'status' => $newStatus,
+        'status_changed_at' => now(),
+        'previous_status' => $oldStatus,
+    ]);
+
+    // Если доставлено — устанавливаем дату доставки
+    if ($newStatus === 'delivered') {
+        $order->update(['delivered_at' => now()]);
     }
 
-    // Если заказ оплачен — устанавливаем дату оплаты
-    if ($newStatus === Order::STATUS_PAID && !$order->paid_at) {
-        $order->update(['paid_at' => now()]);
-    }
-
-    $message = "Статус заказа №{$order->id} изменен: «{$this->statusLabel($oldStatus)}» → «{$this->statusLabel($newStatus)}»";
-    
-    if ($order->canRevert()) {
-        $message .= ". У вас есть 10 минут для отката изменения.";
-    }
-
-    return back()->with('success', $message);
+    return back()->with('success', "Статус заказа №{$order->id} изменён: «{$this->statusLabel($oldStatus)}» → «{$this->statusLabel($newStatus)}»");
 }
 
     public function addComment(Request $request, Order $order)

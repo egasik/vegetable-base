@@ -1,105 +1,424 @@
 @extends('layouts.app')
-@section('title', 'Оплата заказа №' . $order->id)
+@section('title', 'Оплата заказа')
 
 @section('content')
-<div class="max-w-4xl mx-auto">
-    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-[#E8FC8C]">
-        
-        {{-- Заголовок --}}
-        <div class="bg-gradient-to-r from-[#0D7D4C] to-[#422168] p-8 text-white">
-            <h1 class="text-4xl font-black mb-2"> Оплата заказа</h1>
-            <p class="text-[#CAF204] text-lg">Заказ №{{ $order->id }} от {{ $order->created_at->format('d.m.Y H:i') }}</p>
-        </div>
+<div class="max-w-6xl mx-auto">
+    <h1 class="text-4xl font-black text-[#422168] text-center mb-8">Оплата заказа №{{ $order->id }}</h1>
 
-        <div class="grid md:grid-cols-2 gap-0">
-            
-            {{-- Левая колонка: Детали заказа --}}
-            <div class="p-8 bg-[#E8FC8C]/20 border-r-4 border-[#E8FC8C]">
-                <h2 class="text-2xl font-black text-[#422168] mb-6"> Детали заказа</h2>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {{-- Левая колонка: Адрес доставки --}}
+        <div class="space-y-4">
+            <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-[#E8FC8C]">
+                <h3 class="text-2xl font-black text-[#422168] mb-4"> Адрес доставки</h3>
                 
+                {{-- Модульные поля адреса --}}
                 <div class="space-y-4">
-                    @foreach($order->items as $item)
-                        <div class="bg-white p-4 rounded-xl border-2 border-[#E8FC8C]">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                
-                                    <p class="font-bold text-[#422168] text-lg">
-                                        {{ $item->product_name ?? 'Товар' }}
-                                    </p>
-                                    <p class="text-sm text-gray-600">{{ $item->quantity }} × {{ $item->price_at_moment }} ₽</p>
-                                </div>
-                                <p class="text-xl font-black text-[#0D7D4C]">{{ $item->quantity * $item->price_at_moment }} ₽</p>
-                            </div>
-                        </div>
-                    @endforeach
+                    {{-- Населённый пункт --}}
+                    <div>
+                        <label class="block text-sm font-bold text-[#0D7D4C] mb-1">
+                            Населённый пункт <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" 
+                               id="city-input" 
+                               autocomplete="off"
+                               placeholder="Начните вводить (например, Иркутск)"
+                               class="w-full border-2 border-[#E8FC8C] p-3 rounded-xl focus:border-[#CAF204] focus:outline-none">
+                        <div id="city-dropdown" class="hidden mt-1 max-h-48 overflow-y-auto border-2 border-[#CAF204] rounded-xl bg-white shadow-lg"></div>
+                        <input type="hidden" id="city-value" name="delivery_city" value="{{ $order->delivery_city ?? 'Иркутск' }}">
+                        @error('delivery_city')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Улица --}}
+                    <div>
+                        <label class="block text-sm font-bold text-[#0D7D4C] mb-1">
+                            Улица <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" 
+                               id="street-input" 
+                               autocomplete="off"
+                               placeholder="Сначала выберите населённый пункт"
+                               disabled
+                               class="w-full border-2 border-gray-300 bg-gray-100 p-3 rounded-xl text-gray-500 cursor-not-allowed">
+                        <div id="street-dropdown" class="hidden mt-1 max-h-48 overflow-y-auto border-2 border-[#CAF204] rounded-xl bg-white shadow-lg"></div>
+                        <input type="hidden" id="street-value" name="delivery_street">
+                        @error('delivery_street')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Номер дома --}}
+                    <div>
+                        <label class="block text-sm font-bold text-[#0D7D4C] mb-1">
+                            Номер дома <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" 
+                               id="house-input" 
+                               autocomplete="off"
+                               placeholder="Сначала выберите улицу"
+                               disabled
+                               class="w-full border-2 border-gray-300 bg-gray-100 p-3 rounded-xl text-gray-500 cursor-not-allowed">
+                        <div id="house-dropdown" class="hidden mt-1 max-h-48 overflow-y-auto border-2 border-[#CAF204] rounded-xl bg-white shadow-lg"></div>
+                        <input type="hidden" id="house-value" name="delivery_house">
+                        @error('delivery_house')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Статус валидации --}}
+                    <div id="validation-status" class="hidden p-3 rounded-xl text-sm font-bold"></div>
                 </div>
 
-                <div class="mt-6 pt-6 border-t-4 border-[#CAF204]">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xl font-bold text-[#422168]">Итого к оплате:</span>
-                        <span class="text-4xl font-black text-[#0D7D4C]">{{ $order->total_amount }} ₽</span>
+                {{-- Карта --}}
+                <div class="mt-6">
+                    <label class="block text-sm font-bold text-[#0D7D4C] mb-2">Или выберите на карте</label>
+                    <div id="map" class="w-full h-80 rounded-xl border-2 border-[#E8FC8C]"></div>
+                    <p class="text-xs text-gray-500 mt-2">
+                         Кликните по карте для выбора адреса
+                    </p>
+                </div>
+
+                {{-- Скрытые поля для координат --}}
+                <input type="hidden" id="latitude" name="latitude">
+                <input type="hidden" id="longitude" name="longitude">
+                <input type="hidden" id="full-address" name="delivery_address">
+            </div>
+        </div>
+
+        {{-- Правая колонка: Информация о заказе и оплата --}}
+        <div class="space-y-4">
+            <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-[#E8FC8C]">
+                <h3 class="text-2xl font-black text-[#422168] mb-4">Информация о заказе</h3>
+                
+                <div class="space-y-2 mb-6">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Сумма:</span>
+                        <span class="font-bold text-[#422168]">{{ number_format($order->total_amount, 0, '.', ' ') }} ₽</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Товаров:</span>
+                        <span class="font-bold">{{ $order->items->count() }} шт.</span>
                     </div>
                 </div>
-            </div>
 
-            {{-- Правая колонка: Выбор способа оплаты --}}
-            <div class="p-8">
-                <h2 class="text-2xl font-black text-[#422168] mb-6"> Способ оплаты</h2>
-                
-                <form action="{{ route('payment.process', $order) }}" method="POST" class="space-y-4">
+                <form action="{{ route('payment.process', $order) }}" method="POST" id="payment-form">
                     @csrf
                     
-                    {{-- Банковская карта --}}
-                    <label class="block cursor-pointer group">
-                        <input type="radio" name="payment_method" value="bank_card" required 
-                               class="peer sr-only">
-                        <div class="p-5 rounded-2xl border-4 border-[#E8FC8C] bg-white transition-all
-                                    peer-checked:border-[#0D7D4C] peer-checked:bg-[#0D7D4C]/5
-                                    group-hover:border-[#CAF204] group-hover:shadow-lg">
-                            <div class="flex items-center gap-4">
-                                
-                                <div class="flex-1">
-                                    <p class="font-black text-lg text-[#422168]">Банковская карта</p>
-                                    <p class="text-sm text-gray-600">Visa, MasterCard, МИР</p>
-                                </div>
-                                <div class="w-6 h-6 rounded-full border-4 border-gray-300 peer-checked:border-[#0D7D4C] peer-checked:bg-[#0D7D4C]"></div>
-                            </div>
-                        </div>
-                    </label>
-
-                    
-
-                    <button type="submit" class="w-full bg-[#0D7D4C] text-white font-black py-4 rounded-xl btn-animated pulse-hover hover:bg-[#422168] text-lg mt-6">
-                        Перейти к оплате →
+                    <button type="submit" 
+                            id="submit-btn"
+                            disabled
+                            class="w-full bg-gray-300 text-gray-500 font-bold py-3 rounded-xl cursor-not-allowed">
+                        Сначала укажите адрес доставки
                     </button>
                 </form>
-                <form action="{{ route('payment.process', $order) }}" method="POST" class="space-y-4">
-    @csrf
-    
-    @if ($errors->any())
-        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-xl mb-4">
-            <p class="font-bold">⚠️ Ошибки:</p>
-            <ul class="list-disc list-inside text-sm mt-2">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-    
-    @if(session('error'))
-        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-xl mb-4">
-            <p class="font-bold">⚠️ {{ session('error') }}</p>
-        </div>
-    @endif
-    
-                <div class="mt-6 p-4 bg-[#CAF204]/20 rounded-xl border-l-4 border-[#CAF204]">
-                    <p class="text-xs text-[#422168]">
-                        <strong>Другие способы оплаты на данный момент отсутствуют</strong>
+
+                <div class="mt-4 p-4 bg-[#E8FC8C]/30 rounded-xl border-l-4 border-[#CAF204]">
+                    <p class="text-sm text-[#422168]">
+                        <strong>Важно:</strong> Доставка осуществляется по Иркутску и Иркутской области. 
+                        Адрес будет проверен через карту.
                     </p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+{{-- Подключение Yandex Maps API --}}
+<script src="https://api-maps.yandex.ru/2.1/?apikey={{ config('services.yandex.maps_js_api_key') }}&lang=ru_RU" type="text/javascript"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let myMap;
+    let placemark;
+    let cityTimeout, streetTimeout, houseTimeout;
+
+    // Инициализация карты
+    ymaps.ready(initMap);
+    
+    function initMap() {
+        myMap = new ymaps.Map("map", {
+            center: [52.2978, 104.2964], // Иркутск
+            zoom: 12,
+            controls: ['zoomControl']
+        });
+
+        // Клик по карте
+        myMap.events.add('click', function(e) {
+            const coords = e.get('coords');
+            
+            // Обратное геокодирование
+            ymaps.geocode(coords, {
+                results: 1,
+                strictBounds: true,
+                boundedBy: new ymaps.bounds([51.0, 102.0], [54.0, 107.0])
+            }).then(function(res) {
+                const firstGeoObject = res.geoObjects.get(0);
+                if (firstGeoObject) {
+                    const address = firstGeoObject.getAddressLine();
+                    const addressParts = firstGeoObject.properties.get('Address', {});
+                    
+                    // Заполняем модульные поля
+                    document.getElementById('city-input').value = addressParts.locality || '';
+                    document.getElementById('city-value').value = addressParts.locality || '';
+                    document.getElementById('street-input').value = addressParts.street || '';
+                    document.getElementById('street-value').value = addressParts.street || '';
+                    document.getElementById('house-input').value = addressParts.premiseNumber || '';
+                    document.getElementById('house-value').value = addressParts.premiseNumber || '';
+                    
+                    setMapMarker(coords, address);
+                    validateFullAddress();
+                }
+            });
+        });
+
+        // Если у заказа уже есть координаты
+        @if($order->latitude && $order->longitude)
+            const savedCoords = [{{ $order->latitude }}, {{ $order->longitude }}];
+            ymaps.geocode(savedCoords, { results: 1 }).then(function(res) {
+                const firstGeoObject = res.geoObjects.get(0);
+                if (firstGeoObject) {
+                    setMapMarker(savedCoords, firstGeoObject.getAddressLine());
+                }
+            });
+        @endif
+    }
+
+    function setMapMarker(coords, address) {
+        if (placemark) {
+            myMap.geoObjects.remove(placemark);
+        }
+        
+        placemark = new ymaps.Placemark(coords, {
+            hintContent: address,
+            balloonContent: address
+        });
+        
+        myMap.geoObjects.add(placemark);
+        myMap.setCenter(coords, 16);
+        
+        document.getElementById('latitude').value = coords[0];
+        document.getElementById('longitude').value = coords[1];
+        document.getElementById('full-address').value = address;
+    }
+
+    // Автодополнение для населённого пункта
+    document.getElementById('city-input').addEventListener('input', function() {
+        clearTimeout(cityTimeout);
+        const query = this.value.trim();
+        
+        if (query.length < 2) {
+            document.getElementById('city-dropdown').classList.add('hidden');
+            return;
+        }
+
+        cityTimeout = setTimeout(() => {
+            fetch(`{{ route('api.address.cities') }}?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    showDropdown('city-dropdown', data, 'city');
+                });
+        }, 300);
+    });
+
+    // Автодополнение для улицы
+    document.getElementById('street-input').addEventListener('input', function() {
+        clearTimeout(streetTimeout);
+        const query = this.value.trim();
+        const city = document.getElementById('city-value').value;
+        
+        if (!city || query.length < 2) {
+            document.getElementById('street-dropdown').classList.add('hidden');
+            return;
+        }
+
+        streetTimeout = setTimeout(() => {
+            fetch(`{{ route('api.address.streets') }}?city=${encodeURIComponent(city)}&q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    showDropdown('street-dropdown', data, 'street');
+                });
+        }, 300);
+    });
+
+    // Автодополнение для дома
+    document.getElementById('house-input').addEventListener('input', function() {
+        clearTimeout(houseTimeout);
+        const query = this.value.trim();
+        const city = document.getElementById('city-value').value;
+        const street = document.getElementById('street-value').value;
+        
+        if (!city || !street) {
+            document.getElementById('house-dropdown').classList.add('hidden');
+            return;
+        }
+
+        houseTimeout = setTimeout(() => {
+            fetch(`{{ route('api.address.houses') }}?city=${encodeURIComponent(city)}&street=${encodeURIComponent(street)}&q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    showDropdown('house-dropdown', data, 'house');
+                });
+        }, 300);
+    });
+
+    function showDropdown(dropdownId, data, type) {
+        const dropdown = document.getElementById(dropdownId);
+        
+        if (data.length === 0) {
+            dropdown.classList.add('hidden');
+            return;
+        }
+
+        dropdown.innerHTML = data.map(item => `
+            <div class="p-3 hover:bg-[#E8FC8C] cursor-pointer border-b border-gray-200 last:border-b-0"
+                 onclick="selectItem('${type}', '${item.name.replace(/'/g, "\\'")}', '${item.full_address.replace(/'/g, "\\'")}', ${item.latitude || 'null'}, ${item.longitude || 'null'})">
+                <div class="font-bold text-sm text-[#422168]">${item.name}</div>
+                <div class="text-xs text-gray-500">${item.full_address}</div>
+            </div>
+        `).join('');
+        
+        dropdown.classList.remove('hidden');
+    }
+
+    window.selectItem = function(type, name, fullAddress, lat, lng) {
+        if (type === 'city') {
+            document.getElementById('city-input').value = name;
+            document.getElementById('city-value').value = name;
+            document.getElementById('city-dropdown').classList.add('hidden');
+            
+            // Активируем поле улицы
+            const streetInput = document.getElementById('street-input');
+            streetInput.disabled = false;
+            streetInput.classList.remove('border-gray-300', 'bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+            streetInput.classList.add('border-[#E8FC8C]', 'bg-white', 'text-gray-900', 'cursor-text');
+            
+            // Сбрасываем улицу и дом
+            document.getElementById('street-input').value = '';
+            document.getElementById('street-value').value = '';
+            document.getElementById('house-input').value = '';
+            document.getElementById('house-value').value = '';
+            document.getElementById('house-input').disabled = true;
+            
+        } else if (type === 'street') {
+            document.getElementById('street-input').value = name;
+            document.getElementById('street-value').value = name;
+            document.getElementById('street-dropdown').classList.add('hidden');
+            
+            // Активируем поле дома
+            const houseInput = document.getElementById('house-input');
+            houseInput.disabled = false;
+            houseInput.classList.remove('border-gray-300', 'bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+            houseInput.classList.add('border-[#E8FC8C]', 'bg-white', 'text-gray-900', 'cursor-text');
+            
+            // Сбрасываем дом
+            document.getElementById('house-input').value = '';
+            document.getElementById('house-value').value = '';
+            
+        } else if (type === 'house') {
+            document.getElementById('house-input').value = name;
+            document.getElementById('house-value').value = name;
+            document.getElementById('house-dropdown').classList.add('hidden');
+            
+            // Устанавливаем координаты на карте
+            if (lat && lng) {
+                setMapMarker([lat, lng], fullAddress);
+            }
+        }
+
+        validateFullAddress();
+    };
+
+    function validateFullAddress() {
+        const city = document.getElementById('city-value').value;
+        const street = document.getElementById('street-value').value;
+        const house = document.getElementById('house-value').value;
+        
+        if (!city || !street || !house) {
+            updateValidationStatus(false, 'Заполните все поля адреса');
+            updateSubmitButton(false);
+            return;
+        }
+
+        fetch('{{ route('api.address.validate') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+            body: JSON.stringify({ city, street, house })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.valid) {
+                updateValidationStatus(true, '✓ Адрес подтверждён: ' + data.full_address);
+                document.getElementById('latitude').value = data.latitude;
+                document.getElementById('longitude').value = data.longitude;
+                document.getElementById('full-address').value = data.full_address;
+                updateSubmitButton(true);
+                
+                // Показываем на карте
+                if (data.latitude && data.longitude) {
+                    setMapMarker([data.latitude, data.longitude], data.full_address);
+                }
+            } else {
+                updateValidationStatus(false, '✗ ' + data.message);
+                updateSubmitButton(false);
+            }
+        });
+    }
+
+    function updateValidationStatus(valid, message) {
+        const statusDiv = document.getElementById('validation-status');
+        statusDiv.classList.remove('hidden');
+        
+        if (valid) {
+            statusDiv.className = 'p-3 rounded-xl text-sm font-bold bg-green-100 text-green-800 border-l-4 border-green-500';
+        } else {
+            statusDiv.className = 'p-3 rounded-xl text-sm font-bold bg-yellow-100 text-yellow-800 border-l-4 border-yellow-500';
+        }
+        
+        statusDiv.textContent = message;
+    }
+
+    function updateSubmitButton(enabled) {
+        const submitBtn = document.getElementById('submit-btn');
+        if (enabled) {
+            submitBtn.disabled = false;
+            submitBtn.className = 'w-full bg-[#0D7D4C] text-white font-bold py-3 rounded-xl btn-animated pulse-hover';
+            submitBtn.textContent = 'Оплатить {{ number_format($order->total_amount, 0, '.', ' ') }} ₽';
+        } else {
+            submitBtn.disabled = true;
+            submitBtn.className = 'w-full bg-gray-300 text-gray-500 font-bold py-3 rounded-xl cursor-not-allowed';
+            submitBtn.textContent = 'Сначала укажите адрес доставки';
+        }
+    }
+
+    // Закрытие dropdown при клике вне
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#city-input') && !e.target.closest('#city-dropdown')) {
+            document.getElementById('city-dropdown').classList.add('hidden');
+        }
+        if (!e.target.closest('#street-input') && !e.target.closest('#street-dropdown')) {
+            document.getElementById('street-dropdown').classList.add('hidden');
+        }
+        if (!e.target.closest('#house-input') && !e.target.closest('#house-dropdown')) {
+            document.getElementById('house-dropdown').classList.add('hidden');
+        }
+    });
+
+    // Валидация перед отправкой
+    document.getElementById('payment-form').addEventListener('submit', function(e) {
+        const city = document.getElementById('city-value').value;
+        const street = document.getElementById('street-value').value;
+        const house = document.getElementById('house-value').value;
+        
+        if (!city || !street || !house) {
+            e.preventDefault();
+            alert('Пожалуйста, заполните все поля адреса');
+            return false;
+        }
+    });
+});
+</script>
 @endsection

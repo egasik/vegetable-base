@@ -81,7 +81,6 @@
         </div>
     </form>
 
-
     @if(session('info'))
         <div class="bg-blue-100 text-blue-700 p-4 rounded-xl font-bold mb-6 border-l-8 border-blue-500">
             {{ session('info') }}
@@ -97,6 +96,7 @@
                     <th class="p-4 text-left">Клиент</th>
                     <th class="p-4 text-left">Товары</th>
                     <th class="p-4 text-left">Сумма</th>
+                    <th class="p-4 text-left">Адрес доставки</th>
                     <th class="p-4 text-left">Статус</th>
                     <th class="p-4 text-left">Дата</th>
                     <th class="p-4 text-left">Действия</th>
@@ -122,6 +122,25 @@
                             </div>
                         </td>
                         <td class="p-4 font-black text-[#0D7D4C] text-lg">{{ number_format($order->total_amount, 0, '.', ' ') }} ₽</td>
+                        
+                        {{-- Адрес доставки --}}
+                        <td class="p-4 text-sm">
+                            @if($order->delivery_address)
+                                <div class="font-bold text-[#422168] text-xs" title="{{ $order->delivery_address }}">
+                                    {{ Str::limit($order->delivery_address, 40) }}
+                                </div>
+                                @if($order->latitude && $order->longitude)
+                                    <a href="https://yandex.ru/maps/?pt={{ $order->longitude }},{{ $order->latitude }}&z=16" 
+                                       target="_blank" 
+                                       class="text-xs text-[#0D7D4C] hover:underline">
+                                        📍 На карте
+                                    </a>
+                                @endif
+                            @else
+                                <span class="text-xs text-gray-400 italic">Не указан</span>
+                            @endif
+                        </td>
+                        
                         <td class="p-4">
                             @include('admin.orders._status_badge', ['status' => $order->status])
                         </td>
@@ -160,39 +179,95 @@
                                 </div>
                             @else
                                 {{-- БЛОК ДЛЯ АКТИВНЫХ ЗАКАЗОВ --}}
-                                <form action="{{ route('admin.orders.update-status', $order) }}" method="POST" class="flex gap-2 items-center">
+                                <form action="{{ route('admin.orders.update-status', $order) }}" 
+                                      method="POST" 
+                                      enctype="multipart/form-data"
+                                      class="space-y-2"
+                                      id="status-form-{{ $order->id }}">
                                     @csrf
                                     @method('PATCH')
-                                    <select name="status" class="border-2 border-[#E8FC8C] rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#CAF204]"
-                                            @if(empty($order->getAllowedNextStatuses())) disabled @endif>
-                                        <option value="{{ $order->status }}" selected>{{ $order->status_label }}</option>
-                                        @foreach($order->getAllowedNextStatuses() as $allowedStatus)
-                                            <option value="{{ $allowedStatus }}">
-                                                @if($allowedStatus === $order->previous_status && $order->canRevert())
-                                                    ← Откатить ({{ $order->getRevertMinutesLeft() }} мин)
-                                                @else
-                                                    → {{ match($allowedStatus) {
-                                                        'pending' => 'Ожидает',
-                                                        'paid' => 'Оплачен',
-                                                        'shipping' => 'В доставке',
-                                                        'delivered' => 'Вручен',
-                                                        'cancelled' => 'Отменен',
-                                                    } }}
-                                                @endif
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    
+                                    {{-- Выбор статуса --}}
+                                    <div>
+                                        <select name="status" 
+                                                id="status-select-{{ $order->id }}"
+                                                onchange="togglePhotoField({{ $order->id }}, this.value)"
+                                                class="w-full border-2 border-[#E8FC8C] rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#CAF204]"
+                                                @if(empty($order->getAllowedNextStatuses())) disabled @endif>
+                                            <option value="{{ $order->status }}" selected>{{ $order->status_label }}</option>
+                                            @foreach($order->getAllowedNextStatuses() as $allowedStatus)
+                                                <option value="{{ $allowedStatus }}">
+                                                    @if($allowedStatus === $order->previous_status && $order->canRevert())
+                                                        ← Откатить ({{ $order->getRevertMinutesLeft() }} мин)
+                                                    @else
+                                                        → {{ match($allowedStatus) {
+                                                            'pending' => 'Ожидает',
+                                                            'paid' => 'Оплачен',
+                                                            'shipping' => 'В доставке',
+                                                            'delivered' => 'Вручен',
+                                                            'cancelled' => 'Отменен',
+                                                        } }}
+                                                    @endif
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    {{-- Поле для фото (показывается только для статуса "delivered") --}}
+                                    <div id="photo-field-{{ $order->id }}" class="hidden">
+                                        <label class="block text-xs font-bold text-[#0D7D4C] mb-1">
+                                            📷 Фото подтверждения доставки <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="file" 
+                                               name="photo" 
+                                               accept="image/*"
+                                               id="photo-input-{{ $order->id }}"
+                                               class="w-full text-xs border-2 border-[#E8FC8C] p-2 rounded-lg focus:border-[#CAF204] focus:outline-none">
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            Фото необходимо для подтверждения факта доставки
+                                        </p>
+                                    </div>
+
+                                    {{-- Комментарий --}}
+                                    <div>
+                                        <textarea name="comment" 
+                                                  placeholder="Комментарий (необязательно)"
+                                                  class="w-full text-xs border-2 border-[#E8FC8C] p-2 rounded-lg focus:border-[#CAF204] focus:outline-none"
+                                                  rows="2"></textarea>
+                                    </div>
+
                                     <button type="submit" 
-                                            class="bg-[#0D7D4C] text-white px-3 py-1 rounded-lg text-sm font-bold hover:bg-[#422168] transition-colors
+                                            class="w-full bg-[#0D7D4C] text-white px-3 py-1 rounded-lg text-sm font-bold hover:bg-[#422168] transition-colors
                                                    {{ empty($order->getAllowedNextStatuses()) ? 'opacity-50 cursor-not-allowed' : '' }}"
                                             {{ empty($order->getAllowedNextStatuses()) ? 'disabled' : '' }}>
-                                        OK
+                                        Применить
                                     </button>
                                 </form>
                                 
                                 @if($order->canRevert())
                                     <div class="mt-2 text-xs text-blue-600 font-bold">
                                         ⏱ Можно откатить: {{ $order->getRevertMinutesLeft() }} мин
+                                    </div>
+                                @endif
+
+                                {{-- Фото доставки (если есть) --}}
+                                @if($order->deliveryPhotos && $order->deliveryPhotos->count() > 0)
+                                    <div class="mt-3 pt-3 border-t border-[#E8FC8C]">
+                                        <p class="text-xs font-bold text-[#0D7D4C] mb-2">📸 Фото доставки:</p>
+                                        <div class="flex gap-2 flex-wrap">
+                                            @foreach($order->deliveryPhotos as $photo)
+                                                <a href="{{ asset('storage/' . $photo->file_path) }}" 
+                                                   target="_blank" 
+                                                   class="block group relative"
+                                                   title="{{ $photo->comment ?? 'Без комментария' }} — {{ $photo->created_at->format('d.m.Y H:i') }}">
+                                                    <img src="{{ asset('storage/' . $photo->file_path) }}" 
+                                                         class="w-16 h-16 object-cover rounded-lg border-2 border-[#E8FC8C] group-hover:border-[#CAF204] transition-colors">
+                                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-lg transition-colors flex items-center justify-center">
+                                                        <span class="text-white opacity-0 group-hover:opacity-100 text-xl">🔍</span>
+                                                    </div>
+                                                </a>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 @endif
                                 
@@ -242,7 +317,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="p-12 text-center text-gray-500">
+                        <td colspan="8" class="p-12 text-center text-gray-500">
                             <p class="text-4xl mb-2">📋</p>
                             <p class="font-bold">Заказы не найдены</p>
                         </td>
@@ -253,4 +328,30 @@
     </div>
 
     <div class="mt-6">{{ $orders->links() }}</div>
+
+    {{-- JavaScript для управления полем фото --}}
+    <script>
+    function togglePhotoField(orderId, status) {
+        const photoField = document.getElementById('photo-field-' + orderId);
+        const photoInput = document.getElementById('photo-input-' + orderId);
+        
+        if (status === 'delivered') {
+            photoField.classList.remove('hidden');
+            photoInput.required = true;
+        } else {
+            photoField.classList.add('hidden');
+            photoInput.required = false;
+            photoInput.value = ''; // Очищаем выбор файла
+        }
+    }
+
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        @foreach($orders as $order)
+            @if(!$order->trashed())
+                togglePhotoField({{ $order->id }}, '{{ $order->status }}');
+            @endif
+        @endforeach
+    });
+    </script>
 @endsection

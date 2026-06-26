@@ -27,6 +27,10 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
+    
+    'yandex' => [
+    'maps_geocoder_key' => env('YANDEX_MAPS_GEOCODER_KEY'),
+    ],
 
     'slack' => [
         'notifications' => [

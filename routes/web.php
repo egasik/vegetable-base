@@ -86,3 +86,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/orders/{id}/restore', [Admin\OrderController::class, 'restore'])->name('orders.restore');
     Route::delete('/orders/{id}/force', [Admin\OrderController::class, 'forceDelete'])->name('orders.force-delete');
 });
+use App\Http\Controllers\AddressController;
+
+// API для работы с адресами
+Route::middleware(['auth'])->prefix('api/address')->group(function () {
+    Route::get('/cities', [AddressController::class, 'getCities'])->name('api.address.cities');
+    Route::get('/streets', [AddressController::class, 'getStreets'])->name('api.address.streets');
+    Route::get('/houses', [AddressController::class, 'getHouses'])->name('api.address.houses');
+    Route::post('/validate', [AddressController::class, 'validateAddress'])->name('api.address.validate');
+});

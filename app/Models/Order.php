@@ -45,6 +45,11 @@ class Order extends Model
         'previous_status',
         'deleted_by',
         'delete_reason',
+        'delivery_address',
+        'delivery_city',
+        'delivery_region',
+        'latitude',
+        'longitude',
     ];
 
     protected $casts = [
@@ -174,4 +179,18 @@ public function getAllowedNextStatuses(): array
     {
         return in_array($this->status, self::ACTIVE_STATUSES);
     }
+    public function getFullDeliveryAddressAttribute(): string
+{
+    $parts = array_filter([
+        $this->delivery_city,
+        $this->delivery_region,
+        $this->delivery_address,
+    ]);
+    
+    return implode(', ', $parts);
+}
+public function deliveryPhotos()
+{
+    return $this->hasMany(DeliveryPhoto::class);
+}
 }

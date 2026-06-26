@@ -31,129 +31,59 @@ class PaymentController extends Controller
      */
     public function process(Request $request, Order $order)
 {
-    if ($order->user_id !== Auth::id()) {
-        abort(403);
-    }
-
     $request->validate([
-        'payment_method' => 'required|in:bank_card,sbp',
+        'delivery_city' => 'required|string|max:255',
+        'delivery_street' => 'required|string|max:255',
+        'delivery_house' => 'required|string|max:50',
+        'latitude' => 'nullable|numeric',
+        'longitude' => 'nullable|numeric',
+        'delivery_address' => 'required|string|max:500',
     ]);
 
-    $order->update(['payment_method' => $request->payment_method]);
+    // Формируем полный адрес
+    $fullAddress = implode(', ', array_filter([
+        $request->delivery_city,
+        $request->delivery_street,
+        "д. {$request->delivery_house}",
+    ]));
 
-    $user = Auth::user();
+    // Сохраняем адрес доставки
+    $order->update([
+        'delivery_address' => $fullAddress,
+        'delivery_city' => $request->delivery_city,
+        'delivery_region' => 'Иркутская область',
+        'latitude' => $request->latitude,
+        'longitude' => $request->longitude,
+    ]);
 
-    // Базовые данные платежа
-    $paymentData = [
+    // Создаём платёж в ЮKassa
+    $yooKassaClient = new Client();
+    $yooKassaClient->setAuth(
+        config('services.yookassa.shop_id'),
+        config('services.yookassa.secret_key')
+    );
+
+    $payment = $yooKassaClient->createPayment([
         'amount' => [
             'value' => number_format($order->total_amount, 2, '.', ''),
             'currency' => 'RUB',
         ],
+        'confirmation' => [
+            'type' => 'redirect',
+            'return_url' => route('payment.success', $order),
+        ],
         'capture' => true,
-        'description' => 'Заказ №' . $order->id . ' в магазине Овощная база',
+        'description' => 'Оплата заказа №' . $order->id,
         'metadata' => [
             'order_id' => $order->id,
         ],
-    ];
+    ], uniqid('', true));
 
-    // Фискальный чек (обязателен для СБП)
-    $receipt = [
-        'customer' => [
-            'email' => $user->email ?? 'test@example.com',
-        ],
-        'items' => [],
-    ];
+    $order->update([
+        'payment_id' => $payment->getId(),
+    ]);
 
-    // Добавляем товары из заказа в чек
-    foreach ($order->items as $item) {
-        $receipt['items'][] = [
-            'description' => $item->product->name ?? 'Товар',
-            'quantity' => (string) $item->quantity,
-            'amount' => [
-                'value' => number_format($item->price_at_moment, 2, '.', ''),
-                'currency' => 'RUB',
-            ],
-            'vat_code' => 1, // Без НДС
-            'payment_mode' => 'full_payment',
-            'payment_subject' => 'commodity',
-        ];
-    }
-
-    $paymentData['receipt'] = $receipt;
-
-    // Настройка способа оплаты
-    if ($request->payment_method === 'bank_card') {
-        $paymentData['confirmation'] = [
-            'type' => 'redirect',
-            'return_url' => route('payment.success', $order),
-        ];
-        $paymentData['payment_method_data'] = [
-            'type' => 'bank_card',
-        ];
-    } elseif ($request->payment_method === 'sbp') {
-        $paymentData['confirmation'] = [
-            'type' => 'qr',
-        ];
-        $paymentData['payment_method_data'] = [
-            'type' => 'sbp',
-        ];
-    }
-
-    try {
-        $response = Http::withBasicAuth(
-            config('yookassa.shop_id'),
-            config('yookassa.secret_key')
-        )->withHeaders([
-            'Idempotence-Key' => uniqid('order_', true),
-            'Content-Type' => 'application/json',
-        ])->withoutVerifying()
-          ->post('https://api.yookassa.ru/v3/payments', $paymentData);
-
-        // Логируем ответ для диагностики
-        \Log::info('ЮKassa ответ:', [
-            'status' => $response->status(),
-            'body' => $response->json(),
-        ]);
-
-        if ($response->successful()) {
-            $payment = $response->json();
-            $order->update(['payment_id' => $payment['id']]);
-
-            // Для СБП — показываем QR-код
-            if ($request->payment_method === 'sbp') {
-                $qrData = $payment['confirmation']['confirmation_data'] 
-                       ?? $payment['confirmation']['confirmation_url'] 
-                       ?? null;
-
-                if ($qrData) {
-                    $qrCode = QrCode::format('svg')
-                        ->size(300)
-                        ->margin(1)
-                        ->generate($qrData);
-
-                    return view('payment.qr', compact('order', 'qrCode'));
-                }
-
-                return back()->with('error', 'ЮKassa не вернула данные для QR-кода');
-            }
-
-            // Для карты — редирект
-            if (isset($payment['confirmation']['confirmation_url'])) {
-                return redirect($payment['confirmation']['confirmation_url']);
-            }
-
-            return back()->with('error', 'Не удалось получить ссылку для оплаты');
-
-        } else {
-            $error = $response->json()['description'] ?? 'Неизвестная ошибка';
-            \Log::error('ЮKassa ошибка:', $response->json());
-            return back()->with('error', 'Ошибка ЮKassa: ' . $error);
-        }
-
-    } catch (\Exception $e) {
-        \Log::error('ЮKassa исключение: ' . $e->getMessage());
-        return back()->with('error', 'Ошибка соединения: ' . $e->getMessage());
-    }
+    return redirect($payment->getConfirmation()->getConfirmationUrl());
 }
 
     /**
@@ -274,4 +204,5 @@ public function checkStatus(Order $order)
         return back()->with('error', 'Ошибка проверки: ' . $e->getMessage());
     }
 }
+    
 }
