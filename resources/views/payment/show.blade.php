@@ -5,88 +5,110 @@
 <div class="max-w-6xl mx-auto">
     <h1 class="text-4xl font-black text-[#422168] text-center mb-8">Оплата заказа №{{ $order->id }}</h1>
 
+    @if($errors->any())
+        <div class="bg-red-100 border-l-4 border-red-500 p-4 mb-6 rounded-xl">
+            <ul class="text-red-700 text-sm">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {{-- Левая колонка: Адрес доставки --}}
         <div class="space-y-4">
             <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-[#E8FC8C]">
-                <h3 class="text-2xl font-black text-[#422168] mb-4"> Адрес доставки</h3>
+                <h3 class="text-2xl font-black text-[#422168] mb-4">📍 Адрес доставки</h3>
                 
-                {{-- Модульные поля адреса --}}
-                <div class="space-y-4">
-                    {{-- Населённый пункт --}}
-                    <div>
-                        <label class="block text-sm font-bold text-[#0D7D4C] mb-1">
-                            Населённый пункт <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" 
-                               id="city-input" 
-                               autocomplete="off"
-                               placeholder="Начните вводить (например, Иркутск)"
-                               class="w-full border-2 border-[#E8FC8C] p-3 rounded-xl focus:border-[#CAF204] focus:outline-none">
-                        <div id="city-dropdown" class="hidden mt-1 max-h-48 overflow-y-auto border-2 border-[#CAF204] rounded-xl bg-white shadow-lg"></div>
-                        <input type="hidden" id="city-value" name="delivery_city" value="{{ $order->delivery_city ?? 'Иркутск' }}">
-                        @error('delivery_city')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                <form action="{{ route('payment.process', $order) }}" method="POST" id="payment-form">
+                    @csrf
+                    
+                    {{-- Модульные поля адреса --}}
+                    <div class="space-y-4">
+                        {{-- Населённый пункт --}}
+                        <div>
+                            <label class="block text-sm font-bold text-[#0D7D4C] mb-1">
+                                Населённый пункт <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" 
+                                   id="city-input" 
+                                   autocomplete="off"
+                                   placeholder="Начните вводить (например, Иркутск)"
+                                   class="w-full border-2 border-[#E8FC8C] p-3 rounded-xl focus:border-[#CAF204] focus:outline-none">
+                            <div id="city-dropdown" class="hidden mt-1 max-h-48 overflow-y-auto border-2 border-[#CAF204] rounded-xl bg-white shadow-lg z-50"></div>
+                            <input type="hidden" id="city-value" name="delivery_city" value="{{ old('delivery_city', $order->delivery_city ?? '') }}" required>
+                            @error('delivery_city')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Улица --}}
+                        <div>
+                            <label class="block text-sm font-bold text-[#0D7D4C] mb-1">
+                                Улица <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" 
+                                   id="street-input" 
+                                   autocomplete="off"
+                                   placeholder="Сначала выберите населённый пункт"
+                                   disabled
+                                   class="w-full border-2 border-gray-300 bg-gray-100 p-3 rounded-xl text-gray-500 cursor-not-allowed">
+                            <div id="street-dropdown" class="hidden mt-1 max-h-48 overflow-y-auto border-2 border-[#CAF204] rounded-xl bg-white shadow-lg z-50"></div>
+                            <input type="hidden" id="street-value" name="delivery_street" value="{{ old('delivery_street', '') }}" required>
+                            @error('delivery_street')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Номер дома --}}
+                        <div>
+                            <label class="block text-sm font-bold text-[#0D7D4C] mb-1">
+                                Номер дома <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" 
+                                   id="house-input" 
+                                   autocomplete="off"
+                                   placeholder="Сначала выберите улицу"
+                                   disabled
+                                   class="w-full border-2 border-gray-300 bg-gray-100 p-3 rounded-xl text-gray-500 cursor-not-allowed">
+                            <div id="house-dropdown" class="hidden mt-1 max-h-48 overflow-y-auto border-2 border-[#CAF204] rounded-xl bg-white shadow-lg z-50"></div>
+                            <input type="hidden" id="house-value" name="delivery_house" value="{{ old('delivery_house', '') }}" required>
+                            @error('delivery_house')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Статус валидации --}}
+                        <div id="validation-status" class="hidden p-3 rounded-xl text-sm font-bold"></div>
                     </div>
 
-                    {{-- Улица --}}
-                    <div>
-                        <label class="block text-sm font-bold text-[#0D7D4C] mb-1">
-                            Улица <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" 
-                               id="street-input" 
-                               autocomplete="off"
-                               placeholder="Сначала выберите населённый пункт"
-                               disabled
-                               class="w-full border-2 border-gray-300 bg-gray-100 p-3 rounded-xl text-gray-500 cursor-not-allowed">
-                        <div id="street-dropdown" class="hidden mt-1 max-h-48 overflow-y-auto border-2 border-[#CAF204] rounded-xl bg-white shadow-lg"></div>
-                        <input type="hidden" id="street-value" name="delivery_street">
-                        @error('delivery_street')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                    {{-- Карта --}}
+                    <div class="mt-6">
+                        <label class="block text-sm font-bold text-[#0D7D4C] mb-2">Или выберите на карте</label>
+                        <div id="map" class="w-full h-80 rounded-xl border-2 border-[#E8FC8C]"></div>
+                        <p class="text-xs text-gray-500 mt-2">💡 Кликните по карте для выбора адреса</p>
                     </div>
 
-                    {{-- Номер дома --}}
-                    <div>
-                        <label class="block text-sm font-bold text-[#0D7D4C] mb-1">
-                            Номер дома <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" 
-                               id="house-input" 
-                               autocomplete="off"
-                               placeholder="Сначала выберите улицу"
-                               disabled
-                               class="w-full border-2 border-gray-300 bg-gray-100 p-3 rounded-xl text-gray-500 cursor-not-allowed">
-                        <div id="house-dropdown" class="hidden mt-1 max-h-48 overflow-y-auto border-2 border-[#CAF204] rounded-xl bg-white shadow-lg"></div>
-                        <input type="hidden" id="house-value" name="delivery_house">
-                        @error('delivery_house')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                    {{-- Скрытые поля для координат и полного адреса --}}
+                    <input type="hidden" id="latitude" name="latitude" value="{{ old('latitude', $order->latitude ?? '') }}">
+                    <input type="hidden" id="longitude" name="longitude" value="{{ old('longitude', $order->longitude ?? '') }}">
+                    <input type="hidden" id="full-address" name="delivery_address" value="{{ old('delivery_address', $order->delivery_address ?? '') }}">
+
+                    {{-- Кнопка отправки --}}
+                    <div class="mt-6">
+                        <button type="submit" 
+                                id="submit-btn"
+                                disabled
+                                class="w-full bg-gray-300 text-gray-500 font-bold py-3 rounded-xl cursor-not-allowed">
+                            Сначала укажите адрес доставки
+                        </button>
                     </div>
-
-                    {{-- Статус валидации --}}
-                    <div id="validation-status" class="hidden p-3 rounded-xl text-sm font-bold"></div>
-                </div>
-
-                {{-- Карта --}}
-                <div class="mt-6">
-                    <label class="block text-sm font-bold text-[#0D7D4C] mb-2">Или выберите на карте</label>
-                    <div id="map" class="w-full h-80 rounded-xl border-2 border-[#E8FC8C]"></div>
-                    <p class="text-xs text-gray-500 mt-2">
-                         Кликните по карте для выбора адреса
-                    </p>
-                </div>
-
-                {{-- Скрытые поля для координат --}}
-                <input type="hidden" id="latitude" name="latitude">
-                <input type="hidden" id="longitude" name="longitude">
-                <input type="hidden" id="full-address" name="delivery_address">
+                </form>
             </div>
         </div>
 
-        {{-- Правая колонка: Информация о заказе и оплата --}}
+        {{-- Правая колонка: Информация о заказе --}}
         <div class="space-y-4">
             <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-[#E8FC8C]">
                 <h3 class="text-2xl font-black text-[#422168] mb-4">Информация о заказе</h3>
@@ -102,18 +124,7 @@
                     </div>
                 </div>
 
-                <form action="{{ route('payment.process', $order) }}" method="POST" id="payment-form">
-                    @csrf
-                    
-                    <button type="submit" 
-                            id="submit-btn"
-                            disabled
-                            class="w-full bg-gray-300 text-gray-500 font-bold py-3 rounded-xl cursor-not-allowed">
-                        Сначала укажите адрес доставки
-                    </button>
-                </form>
-
-                <div class="mt-4 p-4 bg-[#E8FC8C]/30 rounded-xl border-l-4 border-[#CAF204]">
+                <div class="p-4 bg-[#E8FC8C]/30 rounded-xl border-l-4 border-[#CAF204]">
                     <p class="text-sm text-[#422168]">
                         <strong>Важно:</strong> Доставка осуществляется по Иркутску и Иркутской области. 
                         Адрес будет проверен через карту.
@@ -132,9 +143,14 @@ document.addEventListener('DOMContentLoaded', function() {
     let myMap;
     let placemark;
     let cityTimeout, streetTimeout, houseTimeout;
+    let isAddressValid = false;
 
     // Инициализация карты
-    ymaps.ready(initMap);
+    if (typeof ymaps !== 'undefined') {
+        ymaps.ready(initMap);
+    } else {
+        console.error('Yandex Maps API не загружен!');
+    }
     
     function initMap() {
         myMap = new ymaps.Map("map", {
@@ -147,7 +163,6 @@ document.addEventListener('DOMContentLoaded', function() {
         myMap.events.add('click', function(e) {
             const coords = e.get('coords');
             
-            // Обратное геокодирование
             ymaps.geocode(coords, {
                 results: 1,
                 strictBounds: true,
@@ -158,7 +173,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     const address = firstGeoObject.getAddressLine();
                     const addressParts = firstGeoObject.properties.get('Address', {});
                     
-                    // Заполняем модульные поля
                     document.getElementById('city-input').value = addressParts.locality || '';
                     document.getElementById('city-value').value = addressParts.locality || '';
                     document.getElementById('street-input').value = addressParts.street || '';
@@ -216,8 +230,10 @@ document.addEventListener('DOMContentLoaded', function() {
             fetch(`{{ route('api.address.cities') }}?q=${encodeURIComponent(query)}`)
                 .then(response => response.json())
                 .then(data => {
+                    console.log('Города:', data);
                     showDropdown('city-dropdown', data, 'city');
-                });
+                })
+                .catch(error => console.error('Ошибка:', error));
         }, 300);
     });
 
@@ -236,8 +252,10 @@ document.addEventListener('DOMContentLoaded', function() {
             fetch(`{{ route('api.address.streets') }}?city=${encodeURIComponent(city)}&q=${encodeURIComponent(query)}`)
                 .then(response => response.json())
                 .then(data => {
+                    console.log('Улицы:', data);
                     showDropdown('street-dropdown', data, 'street');
-                });
+                })
+                .catch(error => console.error('Ошибка:', error));
         }, 300);
     });
 
@@ -257,8 +275,10 @@ document.addEventListener('DOMContentLoaded', function() {
             fetch(`{{ route('api.address.houses') }}?city=${encodeURIComponent(city)}&street=${encodeURIComponent(street)}&q=${encodeURIComponent(query)}`)
                 .then(response => response.json())
                 .then(data => {
+                    console.log('Дома:', data);
                     showDropdown('house-dropdown', data, 'house');
-                });
+                })
+                .catch(error => console.error('Ошибка:', error));
         }, 300);
     });
 
@@ -282,18 +302,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     window.selectItem = function(type, name, fullAddress, lat, lng) {
+        console.log('Выбрано:', type, name, lat, lng);
+        
         if (type === 'city') {
             document.getElementById('city-input').value = name;
             document.getElementById('city-value').value = name;
             document.getElementById('city-dropdown').classList.add('hidden');
             
-            // Активируем поле улицы
             const streetInput = document.getElementById('street-input');
             streetInput.disabled = false;
             streetInput.classList.remove('border-gray-300', 'bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
             streetInput.classList.add('border-[#E8FC8C]', 'bg-white', 'text-gray-900', 'cursor-text');
+            streetInput.focus();
             
-            // Сбрасываем улицу и дом
             document.getElementById('street-input').value = '';
             document.getElementById('street-value').value = '';
             document.getElementById('house-input').value = '';
@@ -305,13 +326,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('street-value').value = name;
             document.getElementById('street-dropdown').classList.add('hidden');
             
-            // Активируем поле дома
             const houseInput = document.getElementById('house-input');
             houseInput.disabled = false;
             houseInput.classList.remove('border-gray-300', 'bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
             houseInput.classList.add('border-[#E8FC8C]', 'bg-white', 'text-gray-900', 'cursor-text');
+            houseInput.focus();
             
-            // Сбрасываем дом
             document.getElementById('house-input').value = '';
             document.getElementById('house-value').value = '';
             
@@ -320,7 +340,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('house-value').value = name;
             document.getElementById('house-dropdown').classList.add('hidden');
             
-            // Устанавливаем координаты на карте
             if (lat && lng) {
                 setMapMarker([lat, lng], fullAddress);
             }
@@ -333,6 +352,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const city = document.getElementById('city-value').value;
         const street = document.getElementById('street-value').value;
         const house = document.getElementById('house-value').value;
+        
+        console.log('Валидация:', { city, street, house });
         
         if (!city || !street || !house) {
             updateValidationStatus(false, 'Заполните все поля адреса');
@@ -350,6 +371,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
+            console.log('Результат валидации:', data);
             if (data.valid) {
                 updateValidationStatus(true, '✓ Адрес подтверждён: ' + data.full_address);
                 document.getElementById('latitude').value = data.latitude;
@@ -357,7 +379,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('full-address').value = data.full_address;
                 updateSubmitButton(true);
                 
-                // Показываем на карте
                 if (data.latitude && data.longitude) {
                     setMapMarker([data.latitude, data.longitude], data.full_address);
                 }
@@ -365,6 +386,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateValidationStatus(false, '✗ ' + data.message);
                 updateSubmitButton(false);
             }
+        })
+        .catch(error => {
+            console.error('Ошибка валидации:', error);
+            updateValidationStatus(false, 'Ошибка проверки адреса');
+            updateSubmitButton(false);
         });
     }
 
@@ -412,12 +438,27 @@ document.addEventListener('DOMContentLoaded', function() {
         const city = document.getElementById('city-value').value;
         const street = document.getElementById('street-value').value;
         const house = document.getElementById('house-value').value;
+        const latitude = document.getElementById('latitude').value;
+        const longitude = document.getElementById('longitude').value;
+        
+        console.log('Отправка формы:', { city, street, house, latitude, longitude });
         
         if (!city || !street || !house) {
             e.preventDefault();
             alert('Пожалуйста, заполните все поля адреса');
             return false;
         }
+        
+        if (!latitude || !longitude) {
+            e.preventDefault();
+            alert('Пожалуйста, дождитесь подтверждения адреса');
+            return false;
+        }
+        
+        // Показываем индикатор загрузки
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Обработка...';
     });
 });
 </script>

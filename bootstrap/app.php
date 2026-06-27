@@ -11,14 +11,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Регистрация вашего middleware для проверки email
-        $middleware->alias([
-            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
-        ]);
-        
-        // Если нужно применять ко всем web-запросам:
-        // $middleware->web(append: [\App\Http\Middleware\YourMiddleware::class]);
-    })
+    $middleware->alias([
+        'admin' => \App\Http\Middleware\Admin::class,
+        'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+    ]);
+})
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
