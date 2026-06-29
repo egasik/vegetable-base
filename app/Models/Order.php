@@ -193,4 +193,18 @@ public function deliveryPhotos()
 {
     return $this->hasMany(DeliveryPhoto::class);
 }
+/**
+ * Получить текстовую метку для значения статуса
+ */
+public function getStatusLabelForValue(string $status): string
+{
+    return match($status) {
+        self::STATUS_PENDING => 'Ожидает оплаты',
+        self::STATUS_PAID => 'Оплачен',
+        self::STATUS_SHIPPING => 'В доставке',
+        self::STATUS_DELIVERED => 'Вручен',
+        self::STATUS_CANCELLED => 'Отменен',
+        default => 'Неизвестно',
+    };
+}
 }

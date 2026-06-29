@@ -65,69 +65,71 @@ class OrderController extends Controller
     }
 
     public function updateStatus(Request $request, Order $order)
-    {
-        $request->validate([
-            'status' => 'required|in:pending,paid,shipping,delivered,cancelled',
-            'photo' => $request->status === 'delivered' 
-                ? 'required|image|mimes:jpeg,png,jpg,gif,webp'
-                : 'nullable|image|mimes:jpeg,png,jpg,gif,webp',
-            'comment' => 'nullable|string|max:500',
-        ]);
+{
+    $request->validate([
+        'status' => 'required|in:pending,paid,shipping,delivered,cancelled',
+        'photo' => $request->status === 'delivered' 
+            ? 'required|image|mimes:jpeg,png,jpg,gif,webp'
+            : 'nullable|image|mimes:jpeg,png,jpg,gif,webp',
+        'comment' => 'nullable|string|max:500',
+    ]);
 
-        $oldStatus = $order->status;
-        $newStatus = $request->status;
+    $oldStatus = $order->status;
+    $newStatus = $request->status;
 
-        if ($oldStatus === $newStatus) {
-            return back()->with('info', 'Статус не изменился');
-        }
+    if ($oldStatus === $newStatus) {
+        return back()->with('info', 'Статус не изменился');
+    }
 
-        // Проверка возможности перехода
-        if (!$order->canTransitionTo($newStatus)) {
-            return back()->with('error', 
-                "Невозможно изменить статус с «{$this->statusLabel($oldStatus)}» на «{$this->statusLabel($newStatus)}»"
-            );
-        }
+    // Проверка возможности перехода через модель
+    if (!$order->canTransitionTo($newStatus)) {
+        return back()->with('error', 
+            "Невозможно изменить статус с «{$order->status_label}» на «{$this->statusLabel($newStatus)}». Недопустимый переход."
+        );
+    }
 
-        // Если статус "доставлено" — фото обязательно
-        if ($newStatus === 'delivered' && !$request->hasFile('photo')) {
-            return back()->with('error', 'При подтверждении доставки необходимо прикрепить фото');
-        }
+    // Если статус "доставлено" — фото обязательно
+    if ($newStatus === Order::STATUS_DELIVERED && !$request->hasFile('photo')) {
+        return back()->with('error', 'При подтверждении доставки необходимо прикрепить фото');
+    }
 
-        // Загрузка фото если есть
-        if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('delivery-photos', 'public');
-            
-            DeliveryPhoto::create([
-                'order_id' => $order->id,
-                'user_id' => Auth::id(),
-                'file_path' => $path,
-                'comment' => $request->comment,
-            ]);
-        }
-
-        // Сохраняем историю
-        OrderStatusHistory::create([
+    // Загрузка фото если есть
+    if ($request->hasFile('photo')) {
+        $path = $request->file('photo')->store('delivery-photos', 'public');
+        
+        DeliveryPhoto::create([
             'order_id' => $order->id,
-            'changed_by' => Auth::id(),
-            'old_status' => $oldStatus,
-            'new_status' => $newStatus,
+            'user_id' => Auth::id(),
+            'file_path' => $path,
             'comment' => $request->comment,
         ]);
-
-        // Обновляем заказ
-        $order->update([
-            'status' => $newStatus,
-            'status_changed_at' => now(),
-            'previous_status' => $oldStatus,
-        ]);
-
-        // Если доставлено — устанавливаем дату доставки
-        if ($newStatus === 'delivered') {
-            $order->update(['delivered_at' => now()]);
-        }
-
-        return back()->with('success', "Статус заказа №{$order->id} изменён: «{$this->statusLabel($oldStatus)}» → «{$this->statusLabel($newStatus)}»");
     }
+
+    // Сохраняем историю
+    OrderStatusHistory::create([
+        'order_id' => $order->id,
+        'changed_by' => Auth::id(),
+        'old_status' => $oldStatus,
+        'new_status' => $newStatus,
+        'comment' => $request->comment,
+    ]);
+
+    // Обновляем заказ
+    $order->update([
+        'status' => $newStatus,
+        'status_changed_at' => now(),
+        'previous_status' => $oldStatus,
+    ]);
+
+    // Если доставлено — устанавливаем дату доставки
+    if ($newStatus === Order::STATUS_DELIVERED) {
+        $order->update(['delivered_at' => now()]);
+    }
+
+    return back()->with('success', 
+        "Статус заказа №{$order->id} изменён: «{$this->statusLabel($oldStatus)}» → «{$this->statusLabel($newStatus)}»"
+    );
+}
 
     public function addComment(Request $request, Order $order)
     {
