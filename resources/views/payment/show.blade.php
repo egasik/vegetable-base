@@ -19,7 +19,7 @@
         {{-- Левая колонка: Адрес доставки --}}
         <div class="space-y-4">
             <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-[#E8FC8C]">
-                <h3 class="text-2xl font-black text-[#422168] mb-4">📍 Адрес доставки</h3>
+                <h3 class="text-2xl font-black text-[#422168] mb-4"> Адрес доставки</h3>
                 
                 <form action="{{ route('payment.process', $order) }}" method="POST" id="payment-form">
                     @csrf
@@ -87,7 +87,7 @@
                     <div class="mt-6">
                         <label class="block text-sm font-bold text-[#0D7D4C] mb-2">Или выберите на карте</label>
                         <div id="map" class="w-full h-80 rounded-xl border-2 border-[#E8FC8C]"></div>
-                        <p class="text-xs text-gray-500 mt-2">💡 Кликните по карте для выбора адреса</p>
+                        
                     </div>
 
                     {{-- Скрытые поля для координат и полного адреса --}}

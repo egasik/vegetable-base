@@ -16,7 +16,7 @@
 
     {{-- Панель инструментов конструктора --}}
     <div class="bg-[#422168] p-4 rounded-2xl shadow-lg sticky top-4 z-40">
-        <p class="text-[#CAF204] font-bold mb-3 text-sm">🧱 Добавьте блоки в статью:</p>
+        <p class="text-[#CAF204] font-bold mb-3 text-sm"> Добавьте блоки в статью:</p>
         <div class="flex flex-wrap gap-2">
             <button type="button" onclick="addBlock('header')" class="bg-[#CAF204] text-[#422168] px-4 py-2 rounded-lg btn-animated font-bold text-sm">
                 📌 Заголовок

@@ -29,7 +29,7 @@
                        class="w-full border-2 border-[#E8FC8C] p-3 rounded-xl focus:border-[#CAF204] focus:outline-none">
             </div>
             <button type="submit" class="w-full bg-[#0D7D4C] text-white font-bold py-3 rounded-xl btn-animated">
-                Получить код подтверждения
+                Получить код подтверждения на электронную почту 
             </button>
         </form>
     </div>

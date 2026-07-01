@@ -217,7 +217,6 @@
         passwordInput.addEventListener('input', validatePassword);
         passwordConfirmInput.addEventListener('input', validatePassword);
 
-        // Инициализация при загрузке
         validatePassword();
     </script>
 </body>

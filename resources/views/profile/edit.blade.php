@@ -69,20 +69,31 @@
                                        class="w-full border-2 border-gray-300 bg-gray-100 p-3 rounded-xl text-gray-600 cursor-not-allowed">
                             </div>
 
-                            {{-- Email (readonly с кнопкой изменения) --}}
+                            {{-- Email (readonly с кнопкой изменения и статусом) --}}
                             <div>
                                 <div class="flex items-center justify-between mb-1">
                                     <label class="block text-sm font-bold text-[#0D7D4C]">Email</label>
-                                    <a href="{{ route('profile.email-change') }}" class="text-xs text-[#0D7D4C] hover:text-[#422168] font-bold underline">
-                                        Изменить
-                                    </a>
+                                    <div class="flex gap-2">
+                                        @if(!$user->email_verified_at)
+                                            <a href="{{ route('profile.verify-email') }}" class="text-xs text-orange-600 hover:text-orange-800 font-bold underline">
+                                                Подтвердить
+                                            </a>
+                                        @endif
+                                        <a href="{{ route('profile.email-change') }}" class="text-xs text-[#0D7D4C] hover:text-[#422168] font-bold underline">
+                                            Изменить
+                                        </a>
+                                    </div>
                                 </div>
                                 <input type="email" value="{{ $user->email }}" readonly
                                        class="w-full border-2 border-gray-300 bg-gray-100 p-3 rounded-xl text-gray-600 cursor-not-allowed">
                                 @if($user->email_verified_at)
-                                    <p class="text-xs text-green-600 mt-1">✓ Email подтверждён</p>
+                                    <p class="text-xs text-green-600 mt-1 font-bold">
+                                        ✓ Email подтверждён {{ $user->email_verified_at->format('d.m.Y') }}
+                                    </p>
                                 @else
-                                    <p class="text-xs text-orange-600 mt-1">⚠ Email не подтверждён</p>
+                                    <p class="text-xs text-orange-600 mt-1 font-bold">
+                                        ⚠ Email не подтверждён — <a href="{{ route('profile.verify-email') }}" class="underline">подтвердить сейчас</a>
+                                    </p>
                                 @endif
                             </div>
 

@@ -7,23 +7,7 @@
         
     </div>
 
-    @if(session('success'))
-        <div class="bg-[#00F3B5] text-[#422168] p-4 rounded-xl font-bold mb-6 border-l-8 border-[#0D7D4C]">
-            {{ session('success') }}
-        </div>
-    @endif
 
-    @if(session('error'))
-        <div class="bg-red-100 text-red-700 p-4 rounded-xl font-bold mb-6 border-l-8 border-red-500">
-            {{ session('error') }}
-        </div>
-    @endif
-
-    @if(session('info'))
-        <div class="bg-blue-100 text-blue-700 p-4 rounded-xl font-bold mb-6 border-l-8 border-blue-500">
-            {{ session('info') }}
-        </div>
-    @endif
 
     <div class="grid lg:grid-cols-3 gap-6">
         {{-- Основная информация --}}
@@ -243,7 +227,7 @@
                     <button type="button" 
                             onclick="document.getElementById('delete-modal').classList.remove('hidden')" 
                             class="block w-full bg-red-500 text-white font-bold py-2 px-4 rounded-lg text-center btn-animated hover:bg-red-600">
-                        🗑 Удалить заказ
+                         Удалить заказ
                     </button>
                 </div>
             </div>

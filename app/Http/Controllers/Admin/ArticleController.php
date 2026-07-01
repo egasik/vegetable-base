@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
+
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\ArticleBlock;
@@ -46,12 +48,24 @@ class ArticleController extends Controller
             'is_published' => $request->boolean('is_published'),
         ]);
 
-        // Удаляем старые блоки и их файлы
-        foreach ($article->blocks as $oldBlock) {
-            if ($oldBlock->type === 'image' && $oldBlock->file_path) {
-                Storage::disk('public')->delete($oldBlock->file_path);
+        // ✅ ИСПРАВЛЕНО: Собираем пути файлов, которые используются в existing_image
+        $usedFiles = [];
+        foreach ($request->blocks as $block) {
+            if ($block['type'] === 'image' && !empty($block['existing_image'])) {
+                $usedFiles[] = $block['existing_image'];
             }
         }
+
+        // Удаляем старые блоки и их файлы (ТОЛЬКО если они не используются)
+        foreach ($article->blocks as $oldBlock) {
+            if ($oldBlock->type === 'image' && $oldBlock->file_path) {
+                // ✅ Удаляем файл только если он НЕ используется в existing_image
+                if (!in_array($oldBlock->file_path, $usedFiles)) {
+                    Storage::disk('public')->delete($oldBlock->file_path);
+                }
+            }
+        }
+        
         $article->blocks()->delete();
 
         $this->saveBlocks($article, $request->blocks);
@@ -88,8 +102,10 @@ class ArticleController extends Controller
 
             if ($block['type'] === 'image') {
                 if (!empty($block['existing_image'])) {
+                    // ✅ Используем существующий файл
                     $data['file_path'] = $block['existing_image'];
                 } elseif (isset($block['file'])) {
+                    // ✅ Загружаем новый файл
                     $path = $block['file']->store('articles/' . $article->id, 'public');
                     $data['file_path'] = $path;
                 }
