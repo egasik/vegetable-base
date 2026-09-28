@@ -1,58 +1,231 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Овощная база
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Курсовой проект интернет-магазина овощей и фруктов на Laravel: каталог с поиском и фильтрами, розничные и оптовые покупки, корзина, личный кабинет, справочник статей и административная панель. Для оплаты предусмотрена интеграция с ЮKassa.
 
-## About Laravel
+## Требования
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Инструкция подходит для Windows, Linux и macOS при установленном окружении:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- PHP **8.4.1–8.5.x**. Хотя `composer.json` допускает PHP 8.3, текущий `composer.lock` содержит зависимости Symfony, требующие PHP не ниже 8.4.1.
+- Composer 2 с поддержкой `composer-runtime-api` 2.2.
+- Node.js **22.12 или новее в ветке 22.x**, либо совместимая более новая версия, и npm. Требование зафиксированного Vite: `^20.19.0 || >=22.12.0`.
+- MySQL 8.x. MariaDB — альтернативный вариант с отдельной проверкой миграций в вашем окружении.
+- Git, если проект скачивается клонированием.
+- Интернет для установки зависимостей. Часть страниц использует Tailwind через внешний CDN, поэтому для их оформления также требуется интернет.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+PHP должен поддерживать PDO и `pdo_mysql`, OpenSSL, mbstring, ctype, fileinfo, tokenizer, XML/DOM/XMLWriter, bcmath, GD, session и стандартные расширения. Рекомендуются curl и zip. Точные требования установленных пакетов проверяются через `composer check-platform-reqs`.
 
-## Learning Laravel
+**SQLite и PostgreSQL сейчас не подходят для развёртывания:** миграция статусов использует специфичный для MySQL/MariaDB запрос `ALTER TABLE ... MODIFY ... ENUM`.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Проверьте программы в терминале:
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```sh
+php -v
+php --ini
+php -m
+composer --version
+node -v
+npm -v
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+На Windows добавьте PHP, Composer и Node.js в `PATH`, затем откройте новый терминал. Если PowerShell блокирует `npm.ps1`, используйте `npm.cmd` вместо `npm`. PHP в терминале и в веб-сервере должен иметь совместимую версию и нужные расширения.
 
-## Contributing
+## 1. Получение проекта
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Скачайте и распакуйте архив либо выполните, заменив `REPOSITORY_URL` адресом своего репозитория:
 
-## Code of Conduct
+```sh
+git clone REPOSITORY_URL vegetable-base
+cd vegetable-base
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Дальнейшие команды выполняются из корня проекта — папки с файлом `artisan`.
 
-## Security Vulnerabilities
+## 2. Создание базы данных
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Запустите MySQL. В его консоли или SQL-редакторе, например phpMyAdmin, выполните от имени администратора БД:
 
-## License
+```sql
+CREATE DATABASE vegetable_base CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'vegetable_user'@'localhost' IDENTIFIED BY 'REPLACE_WITH_LOCAL_PASSWORD';
+GRANT ALL PRIVILEGES ON vegetable_base.* TO 'vegetable_user'@'localhost';
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Замените `REPLACE_WITH_LOCAL_PASSWORD` собственным паролем. Пример рассчитан на БД на том же компьютере. Для удалённой базы её администратор должен разрешить подключение с сервера приложения; адрес и порт указываются в `.env`.
+
+## 3. Настройка окружения
+
+Создайте в корне файл **`.env`** в UTF-8 с содержимым ниже. Если файл уже есть, сохраните резервную копию и отредактируйте его вручную. Не используйте чужие ключи и пароли из переданной копии проекта.
+
+В текущем проекте нет `.env.example`, поэтому копировать его не нужно.
+
+```dotenv
+APP_NAME="Овощная база"
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://127.0.0.1:8000
+APP_LOCALE=ru
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=ru_RU
+
+LOG_CHANNEL=stack
+LOG_STACK=single
+LOG_LEVEL=debug
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=vegetable_base
+DB_USERNAME=vegetable_user
+DB_PASSWORD="REPLACE_WITH_LOCAL_PASSWORD"
+
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+CACHE_STORE=file
+QUEUE_CONNECTION=sync
+FILESYSTEM_DISK=public
+BROADCAST_CONNECTION=log
+
+MAIL_MAILER=log
+MAIL_FROM_ADDRESS="noreply@example.com"
+MAIL_FROM_NAME="Овощная база"
+
+YOOKASSA_SHOP_ID=
+YOOKASSA_SECRET_KEY=
+YOOKASSA_TEST_MODE=true
+```
+
+Укажите пароль пользователя БД. Если редактируете существующий `.env`, удалите устаревший `DB_URL`, если он задан: он может переопределять остальные параметры подключения.
+
+Файловые сессии и кеш, синхронная очередь позволяют запускать проект без Redis, отдельного обработчика очередей и дополнительных таблиц.
+
+`MAIL_MAILER=log` записывает письма, включая ссылки сброса пароля, в `storage/logs/laravel.log`, но не отправляет их. Для отправки настройте SMTP согласно `config/mail.php`.
+
+## 4. Установка и первый запуск
+
+```sh
+composer install
+composer check-platform-reqs
+php artisan config:clear
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+php artisan storage:link
+npm ci
+npm run build
+php artisan serve --host=127.0.0.1 --port=8000
+```
+
+Откройте [http://127.0.0.1:8000](http://127.0.0.1:8000). Терминал с сервером должен оставаться запущенным; остановка — `Ctrl+C`.
+
+- `composer install` и `npm ci` используют версии из lock-файлов. Для развёртывания не заменяйте их командами обновления зависимостей.
+- `key:generate` выполняется один раз для **новой установки**. При переносе данных сохраните исходный `APP_KEY`, иначе зашифрованные значения нельзя будет прочитать.
+- `migrate` создаёт структуру БД и применяет отсутствующие миграции.
+- `db:seed` создаёт демонстрационные учётные записи. Товары, категории и статьи автоматически не добавляются.
+- `storage:link` делает загруженные изображения доступными через `public/storage`.
+- `npm run build` создаёт `public/build`, необходимый для шаблонов с `@vite`.
+
+На Windows создание ссылки может потребовать включённого режима разработчика Windows или терминала от администратора. На Linux/macOS пользователь веб-сервера должен иметь права записи в `storage` и `bootstrap/cache`; не выдавайте всему проекту права `777`.
+
+Не используйте `composer run setup` для этой инструкции: текущий скрипт рассчитывает на отсутствующий `.env.example`. Для запуска на Windows используйте отдельные команды выше вместо `composer run dev`, включающего Laravel Pail.
+
+## 5. Пользователи и наполнение
+
+После `php artisan db:seed` доступны:
+
+- **Администратор:** `admin@vegetable.ru`, пароль `admin123`.
+- **Покупатель:** `user@vegetable.ru`, пароль `user123`.
+
+Это открытые учебные пароли; использовать их на публичном сервере нельзя. Повторный запуск сидеров **сбрасывает пароли этих пользователей** на значения выше.
+
+Войдите администратором и откройте меню профиля → «Админ-панель» или `/admin/products`. Сначала создайте категории через `/admin/categories`, затем товары с ценами, типами продажи и фотографиями. Статьи создаются через `/admin/articles`.
+
+После чистой установки пустой каталог — ожидаемое поведение. Для переноса наполненного сайта нужны база данных и загруженные изображения, а не только исходники.
+
+## 6. Проверка установки
+
+```sh
+php artisan about
+php artisan migrate:status
+php artisan route:list --except-vendor
+```
+
+Все миграции должны иметь статус `Ran`. В браузере проверьте главную, `/catalog`, `/articles`, `/login`, вход покупателя, профиль, добавление товара в корзину и вход администратора. Убедитесь, что фотографии отображаются.
+
+Автоматические тесты запускаются командой:
+
+```sh
+php artisan test
+```
+
+**Ограничения тестов:** `phpunit.xml` использует SQLite в памяти и требует `pdo_sqlite`. Даже с этим расширением миграция статусов несовместима с SQLite; стандартные тесты также требуют адаптации к проекту. Прохождение всего набора сейчас не гарантируется. Не переключайте тесты на рабочую БД: `RefreshDatabase` может удалить её таблицы.
+
+## 7. Оплата
+
+Сайт можно запустить без ключей ЮKassa, но оплата без них не работает. Для учебной демонстрации укажите идентификатор и секретный ключ **тестового магазина** в `YOOKASSA_SHOP_ID` и `YOOKASSA_SECRET_KEY`, затем выполните:
+
+```sh
+php artisan config:clear
+```
+
+`YOOKASSA_TEST_MODE=true` сам по себе не включает песочницу: контроллер не использует этот флаг. Режим определяется учётными данными магазина. Не вводите настоящие реквизиты карт при демонстрации.
+
+Адрес уведомлений в проекте — `/payment/webhook`. Для внешнего сервиса нужен доступный HTTPS-адрес: `127.0.0.1` извне недоступен. Обработчик требует доработки: исключение из CSRF вместе с проверкой подлинности уведомления и сверкой платежа у провайдера.
+
+Известные проблемы, которые установка не исправляет:
+
+- Статусы оплаты (`completed`), модели (`paid`, `shipping`) и миграции (`paid`, `delivering`) расходятся.
+- В запросах к ЮKassa отключена проверка TLS-сертификата.
+- В контроллере профиля осталась обработка хранения CVC и PIN; её нужно удалить до использования реальных данных.
+
+До исправления этих проблем проект не следует использовать для реальных платежей.
+
+## 8. Разработка интерфейса
+
+После изменения CSS/JavaScript выполните `npm run build`. Для автоматического обновления запустите во втором терминале:
+
+```sh
+npm run dev
+```
+
+PHP-сервер должен работать в первом терминале. Если Vite остановлен, а страницы продолжают обращаться к нему, удалите оставшийся `public/hot` и выполните `npm run build`.
+
+## 9. Перенос существующего сайта
+
+1. Экспортируйте MySQL в SQL-дамп, например через phpMyAdmin. Скопируйте `storage/app/public` с фотографиями.
+2. Перенесите исходники с `composer.lock` и `package-lock.json`. Установите `vendor` и `node_modules` заново на целевой машине.
+3. Создайте БД и импортируйте дамп. Перенесите `.env` безопасным способом, сохраните исходный `APP_KEY`, измените адрес сайта и параметры БД.
+4. Выполните `composer install`, `composer check-platform-reqs`, `php artisan config:clear`, затем `php artisan migrate` для новых миграций.
+5. Верните изображения в `storage/app/public`, выполните `php artisan storage:link`, `npm ci` и `npm run build`.
+6. Запустите сервер и повторите проверку. Не запускайте `key:generate` и демонстрационные сидеры при обычном переносе.
+
+Не используйте `migrate:fresh` или `migrate:refresh` для переноса: эти команды удаляют таблицы или откатывают миграции.
+
+## 10. Размещение на сервере
+
+Локальное развёртывание не означает готовность к публичной эксплуатации. Сначала исправьте перечисленные проблемы оплаты и хранения данных. Затем:
+
+1. Настройте Nginx/Apache и PHP-FPM либо другой совместимый PHP-обработчик. **Корень сайта — каталог `public`**, а не корень проекта. Запросы приложения направляйте в `public/index.php`.
+2. Укажите `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://ваш-домен`, `SESSION_SECURE_COOKIE=true` и настройте HTTPS.
+3. Выполните `composer install --no-dev --optimize-autoloader`. Соберите ресурсы через `npm ci` и `npm run build` на сервере или отдельной машине сборки.
+4. Сохраните резервную копию БД, примените `php artisan migrate --force`, настройте права каталогов и `storage:link`.
+5. Выполните `php artisan config:cache` и `php artisan view:cache`. После изменения `.env` пересоздавайте кеш конфигурации.
+6. Не запускайте демонстрационные сидеры на публичном сайте. Подготовьте отдельного администратора с собственным паролем и резервное копирование базы, изображений и `APP_KEY`.
+
+`php artisan serve` предназначен для локальной разработки. В текущем репозитории `.env` отслеживается Git: перед публикацией исключите его из отслеживания и замените секреты, если они были раскрыты. Добавления в `.gitignore` для уже отслеживаемого файла недостаточно.
+
+## Частые проблемы
+
+- **Нет `vendor/autoload.php`:** выполните `composer install` из корня проекта.
+- **Несовместимый PHP:** проверьте `php -v` и `php --ini`, используйте PHP 8.4.1–8.5.x. Не обходите проверку через `--ignore-platform-reqs`.
+- **`could not find driver`:** включите `pdo_mysql` в используемом `php.ini` и перезапустите PHP-сервер. Для тестов нужен `pdo_sqlite`, но он не исправляет несовместимую миграцию.
+- **`Connection refused` / `Access denied`:** проверьте запуск MySQL, адрес, порт, пароль и права пользователя, затем `php artisan config:clear`.
+- **Ошибка около `MODIFY`:** убедитесь, что развёртывание использует MySQL/MariaDB, а не SQLite.
+- **`No application encryption key`:** для новой установки выполните `php artisan key:generate`; при переносе восстановите исходный ключ.
+- **Нет таблиц `cache` или `jobs`:** используйте `CACHE_STORE=file` и `QUEUE_CONNECTION=sync`, затем сбросьте кеш конфигурации.
+- **`Vite manifest not found`:** выполните `npm ci` и `npm run build`.
+- **Нет изображений:** проверьте `storage/app/public`, ссылку `public/storage`, права чтения и `APP_URL`.
+- **Ошибка 419:** проверьте запись сессий, откройте форму заново и используйте один адрес, не смешивая `localhost` и `127.0.0.1`. Для локального HTTP не включайте `SESSION_SECURE_COOKIE=true`.
+- **Порт 8000 занят:** используйте `php artisan serve --host=127.0.0.1 --port=8001`, измените `APP_URL` и сбросьте кеш конфигурации.
+- **Ошибка 500:** смотрите `storage/logs/laravel.log`. Включайте `APP_DEBUG=true` только локально; перед передачей журналов удаляйте секреты и персональные данные.
