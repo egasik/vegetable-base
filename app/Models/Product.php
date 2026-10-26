@@ -10,15 +10,15 @@ class Product extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'category_id', 
-        'name', 
-        'description', 
-        'image_path', 
-        'is_retail', 
-        'retail_price', 
-        'is_wholesale', 
-        'wholesale_unit_kg', 
-        'wholesale_price'
+        'category_id',
+        'name',
+        'description',
+        'image_path',
+        'is_retail',
+        'retail_price',
+        'is_wholesale',
+        'wholesale_unit_kg',
+        'wholesale_price',
     ];
 
     protected $casts = [
@@ -28,9 +28,9 @@ class Product extends Model
         'wholesale_price' => 'decimal:2',
     ];
 
-    public function category() 
-    { 
-        return $this->belongsTo(Category::class); 
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 
     public function orderItems()
@@ -46,8 +46,8 @@ class Product extends Model
         return OrderItem::where('product_id', $this->id)
             ->whereHas('order', function ($query) {
                 $query->whereNotIn('status', [
-                    Order::STATUS_DELIVERED, 
-                    Order::STATUS_CANCELLED
+                    Order::STATUS_DELIVERED,
+                    Order::STATUS_CANCELLED,
                 ]);
             })
             ->exists();
@@ -58,20 +58,7 @@ class Product extends Model
      */
     public function safeDelete(): bool
     {
-        if ($this->hasActiveOrders()) {
-            // Есть активные заказы — только помечаем удалённым
-            return $this->delete(); // soft delete
-        }
-
-        // Нет активных заказов — удаляем полностью
-        // Сначала удаляем связанные order_items (они уже не нужны)
-        $this->orderItems()->delete();
-        
-        // Удаляем файл изображения
-        if ($this->image_path) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($this->image_path);
-        }
-        
-        return (bool) $this->forceDelete();
+        // Preserve purchased items and images in the order history.
+        return (bool) $this->delete();
     }
 }

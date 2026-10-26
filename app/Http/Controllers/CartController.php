@@ -3,164 +3,82 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Services\CartPricing;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class CartController extends Controller
 {
+    public function __construct(private CartPricing $pricing) {}
+
     public function index()
     {
         $cart = session('cart', []);
-        $items = [];
-        $total = 0;
-
-        foreach ($cart as $cartKey => $item) {
-            $product = Product::find($item['product_id']);
-            
-            if (!$product) {
-                $this->removeFromSession($cartKey);
-                continue;
+        $unavailable = [];
+        foreach ($cart as $key => $entry) {
+            $product = Product::find($entry['product_id']);
+            try {
+                if (! $product) {
+                    throw ValidationException::withMessages(['cart' => 'Товар удалён']);
+                }
+                $this->pricing->line($product, $entry['purchase_type'], $entry['quantity']);
+            } catch (ValidationException $e) {
+                $unavailable[] = ($product?->name ?? 'Товар').': '.$e->validator->errors()->first();
+                unset($cart[$key]);
             }
-
-            $subtotal = $item['price'] * $item['quantity'];
-            $total += $subtotal;
-            
-            $items[] = [
-                'cart_key' => $cartKey,
-                'product' => $product,
-                'quantity' => $item['quantity'],
-                'price' => $item['price'],
-                'purchase_type' => $item['purchase_type'],
-                'subtotal' => $subtotal,
-            ];
         }
+        session(['cart' => $cart]);
 
-        return view('cart.index', compact('items', 'total'));
+        return view('cart.index', [...$this->pricing->quote($cart), 'unavailable' => $unavailable]);
     }
 
     public function add(Request $request, Product $product)
     {
-        $validated = $request->validate([
-            'purchase_type' => 'required|in:retail,wholesale',
-            'quantity' => 'required|integer|min:1|max:9999',
-        ]);
-
+        $data = $request->validate(['purchase_type' => 'required|in:retail,wholesale', 'quantity' => 'required|numeric']);
+        $this->pricing->line($product, $data['purchase_type'], $data['quantity']);
         $cart = session('cart', []);
-        $cartKey = $product->id . '_' . $validated['purchase_type'];
-        $price = $validated['purchase_type'] === 'retail' 
-            ? $product->retail_price 
-            : $product->wholesale_price;
-
-        if (isset($cart[$cartKey])) {
-            $cart[$cartKey]['quantity'] += $validated['quantity'];
-        } else {
-            $cart[$cartKey] = [
-                'product_id' => $product->id,
-                'purchase_type' => $validated['purchase_type'],
-                'quantity' => $validated['quantity'],
-                'price' => $price,
-            ];
-        }
-
+        $key = $product->id.'_'.$data['purchase_type'];
+        $quantity = ($cart[$key]['quantity'] ?? 0) + $data['quantity'];
+        $this->pricing->line($product, $data['purchase_type'], $quantity);
+        $cart[$key] = ['product_id' => $product->id, 'purchase_type' => $data['purchase_type'], 'quantity' => $quantity];
         session(['cart' => $cart]);
 
-        return redirect()->route('cart.index')
-            ->with('success', 'Товар добавлен в корзину');
+        return $this->respond($request, 'Товар добавлен в корзину');
     }
 
-    public function update(Request $request, $cartKey)
+    public function update(Request $request, string $cartKey)
     {
-        $validated = $request->validate([
-            'quantity' => 'required|integer|min:1|max:9999',
-        ]);
-
+        $data = $request->validate(['quantity' => 'required|numeric']);
         $cart = session('cart', []);
+        abort_unless(isset($cart[$cartKey]), 404);
+        $product = Product::findOrFail($cart[$cartKey]['product_id']);
+        $line = $this->pricing->line($product, $cart[$cartKey]['purchase_type'], $data['quantity']);
+        $cart[$cartKey]['quantity'] = $line['quantity'];
+        session(['cart' => $cart]);
 
-        if (isset($cart[$cartKey])) {
-            $cart[$cartKey]['quantity'] = $validated['quantity'];
-            session(['cart' => $cart]);
-            return back()->with('success', 'Количество обновлено');
-        }
-
-        return back()->with('error', 'Товар не найден в корзине');
+        return $this->respond($request, 'Количество обновлено');
     }
 
-    public function remove($cartKey)
-    {
-        $this->removeFromSession($cartKey);
-        return back()->with('success', 'Товар удален из корзины');
-    }
-
-    public function clear()
-    {
-        session()->forget('cart');
-        return back()->with('success', 'Корзина очищена');
-    }
-
-    private function removeFromSession($cartKey)
+    public function remove(Request $request, string $cartKey)
     {
         $cart = session('cart', []);
         unset($cart[$cartKey]);
         session(['cart' => $cart]);
-    }
-    /**
- * Изменить тип покупки товара в корзине
- */
-/**
- * Добавить копию товара с другим типом покупки
- * Логика:
- * 1. Создаем новую запись с выбранным типом (старая остается)
- * 2. Если товар с таким типом уже есть — объединяем количество
- * 3. Старую запись НЕ удаляем
- */
-public function changeType(Request $request, $cartKey)
-{
-    $validated = $request->validate([
-        'purchase_type' => 'required|in:retail,wholesale',
-    ]);
 
-    $cart = session('cart', []);
-
-    if (!isset($cart[$cartKey])) {
-        return back()->with('error', 'Товар не найден в корзине');
+        return $this->respond($request, 'Товар удалён из корзины');
     }
 
-    $item = $cart[$cartKey];
-    $product = Product::find($item['product_id']);
+    public function clear(Request $request)
+    {
+        session()->forget('cart');
 
-    if (!$product) {
-        return back()->with('error', 'Товар больше недоступен');
+        return $this->respond($request, 'Корзина очищена');
     }
 
-    // Проверяем доступность выбранного типа
-    if ($validated['purchase_type'] === 'retail' && !$product->is_retail) {
-        return back()->with('error', 'Розничная продажа недоступна');
+    private function respond(Request $request, string $message)
+    {
+        return $request->expectsJson()
+            ? response()->json(['message' => $message, 'count' => count(session('cart', []))])
+            : back()->with('success', $message);
     }
-    if ($validated['purchase_type'] === 'wholesale' && !$product->is_wholesale) {
-        return back()->with('error', 'Оптовая продажа недоступна');
-    }
-
-    // Формируем ключ для нового типа
-    $newCartKey = $product->id . '_' . $validated['purchase_type'];
-    $newPrice = $validated['purchase_type'] === 'retail' 
-        ? $product->retail_price 
-        : $product->wholesale_price;
-
-    // Если товар с таким типом уже есть — объединяем количество
-    if (isset($cart[$newCartKey])) {
-        $cart[$newCartKey]['quantity'] += $item['quantity'];
-    } else {
-        // Создаем новую запись, старая остается
-        $cart[$newCartKey] = [
-            'product_id' => $product->id,
-            'purchase_type' => $validated['purchase_type'],
-            'quantity' => $item['quantity'],
-            'price' => $newPrice,
-        ];
-    }
-
-    session(['cart' => $cart]);
-
-    $typeLabel = $validated['purchase_type'] === 'retail' ? 'розницу' : 'опт';
-    return back()->with('success', "Добавлен товар в {$typeLabel}");
-}
 }

@@ -1,119 +1,56 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Product;
+use App\Models\User;
+use App\Services\CartPricing;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
-        public function store(Request $request)
-{
-    // Если заказ из корзины
-    if ($request->filled('from_cart')) {
-        $cart = session()->get('cart', []);
-        
-        if (empty($cart)) {
-            return back()->with('error', 'Корзина пуста');
-        }
-
-        $totalAmount = 0;
-        $orderItems = [];
-
-        foreach ($cart as $cartKey => $item) {
-            $product = Product::find($item['product_id']);
-            if (!$product) continue;
-
-            $price = $item['price'];
-            $quantity = $item['quantity'];
-            $totalAmount += $price * $quantity;
-
-            $orderItems[] = [
-                'product_id' => $product->id,
-                'quantity' => $quantity,
-                'price_at_moment' => $price,
-            ];
-        }
-
-        if (empty($orderItems)) {
-            return back()->with('error', 'Нет товаров для заказа');
-        }
-
-        DB::beginTransaction();
-        try {
-            $order = Order::create([
-                'user_id' => auth()->id(),
-                'total_amount' => $totalAmount,
-                'status' => 'pending',
-            ]);
-
-            foreach ($orderItems as $orderItem) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $orderItem['product_id'],
-                    'quantity' => $orderItem['quantity'],
-                    'price_at_moment' => $orderItem['price_at_moment'],
-                ]);
+    public function store(Request $request, CartPricing $pricing)
+    {
+        $data = $request->validate(['checkout_token' => 'required|uuid', 'address_confirmed' => 'accepted',
+            'contact_phone' => ['required', 'string', 'max:30', 'regex:/^\+?[0-9 ()-]{10,30}$/'],
+            'delivery_details' => 'nullable|string|max:500']);
+        $order = DB::transaction(function () use ($request, $pricing, $data) {
+            User::whereKey($request->user()->id)->lockForUpdate()->firstOrFail();
+            $existing = Order::where('user_id', $request->user()->id)->where('checkout_token', $data['checkout_token'])->first();
+            if ($existing) {
+                return $existing;
+            }
+            if (! hash_equals((string) session('checkout_token'), $data['checkout_token']) || ! session('cart')) {
+                throw ValidationException::withMessages(['cart' => 'Откройте оформление заново из корзины.']);
+            }
+            $address = session('checkout_address');
+            if (! $address || time() - $address['verified_at'] > 1800) {
+                throw ValidationException::withMessages(['delivery_address' => 'Повторите проверку адреса доставки.']);
+            }
+            $quote = $pricing->quote(session('cart'), true);
+            $fingerprint = hash('sha256', json_encode(array_map(fn ($line) => [
+                $line['product_id'], $line['purchase_type'], $line['quantity'], $line['price'], $line['unit_weight_kg'],
+            ], $quote['items'])));
+            if (! hash_equals((string) session('checkout_quote'), $fingerprint)) {
+                throw ValidationException::withMessages(['cart' => 'Состав, цена или фасовка изменились. Вернитесь в корзину и проверьте итог.']);
+            }
+            unset($address['verified_at']);
+            $order = Order::create([...$address, 'user_id' => $request->user()->id,
+                'total_amount' => $quote['total'], 'status' => Order::STATUS_PENDING,
+                'checkout_token' => $data['checkout_token'], 'contact_phone' => $data['contact_phone'],
+                'delivery_details' => $data['delivery_details'] ?? null]);
+            foreach ($quote['items'] as $item) {
+                $order->items()->create(['product_id' => $item['product_id'], 'product_name' => $item['product_name'],
+                    'quantity' => $item['quantity'], 'price_at_moment' => $item['price'], 'purchase_type' => $item['purchase_type'],
+                    'unit' => $item['unit'], 'unit_weight_kg' => $item['unit_weight_kg'], 'line_total' => $item['subtotal']]);
             }
 
-            DB::commit();
-            session()->forget('cart');
+            return $order;
+        });
+        session()->forget(['cart', 'checkout_quote', 'checkout_token', 'checkout_address']);
 
-            return redirect()->route('payment.show', $order)
-                ->with('success', 'Заказ создан! Выберите способ оплаты.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Ошибка при оформлении заказа');
-        }
+        return redirect()->route('payment.show', $order)->with('success', 'Заказ создан. Выберите способ оплаты.');
     }
-
-    // Обычный заказ одного товара (старая логика)
-    $request->validate([
-        'product_id' => 'required|exists:products,id',
-        'purchase_type' => 'required|in:retail,wholesale',
-        'quantity' => 'required|integer|min:1|max:9999',
-    ]);
-
-    $product = Product::findOrFail($request->product_id);
-    $quantity = (int) $request->quantity;
-
-    if ($request->purchase_type === 'retail') {
-        if (!$product->is_retail) {
-            return back()->with('error', 'Товар недоступен для розничной покупки.');
-        }
-        $priceAtMoment = $product->retail_price;
-    } else {
-        if (!$product->is_wholesale) {
-            return back()->with('error', 'Товар недоступен для оптовой покупки.');
-        }
-        $priceAtMoment = $product->wholesale_price;
-    }
-
-    $totalAmount = $priceAtMoment * $quantity;
-
-    DB::beginTransaction();
-    try {
-        $order = Order::create([
-            'user_id' => auth()->id(),
-            'total_amount' => $totalAmount,
-            'status' => 'pending',
-        ]);
-
-        OrderItem::create([
-            'order_id' => $order->id,
-            'product_id' => $product->id,
-            'quantity' => $quantity,
-            'price_at_moment' => $priceAtMoment,
-        ]);
-
-        DB::commit();
-
-        return redirect()->route('payment.show', $order)
-            ->with('success', 'Заказ создан! Выберите способ оплаты.');
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->with('error', 'Ошибка при оформлении заказа');
-    }
-}
 }

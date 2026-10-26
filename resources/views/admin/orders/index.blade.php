@@ -2,59 +2,59 @@
 @section('title', 'Управление заказами')
 
 @section('content')
-    <h1 class="text-4xl font-black text-[#422168] mb-6">Управление заказами</h1>
+    <h1 class="text-4xl font-semibold text-[#2D3528] mb-6">Управление заказами</h1>
 
     {{-- Статистика --}}
     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
-        <div class="bg-white p-4 rounded-xl border-l-4 border-[#422168] shadow">
+        <div class="bg-white p-4 rounded-xl border-l-4 border-[#2D3528] shadow">
             <p class="text-xs text-gray-500 uppercase">Всего</p>
-            <p class="text-2xl font-black text-[#422168]">{{ $stats['total'] }}</p>
+            <p class="text-2xl font-semibold text-[#2D3528]">{{ $stats['total'] }}</p>
         </div>
         <div class="bg-white p-4 rounded-xl border-l-4 border-gray-400 shadow">
             <p class="text-xs text-gray-500 uppercase">Ожидают</p>
-            <p class="text-2xl font-black text-gray-600">{{ $stats['pending'] }}</p>
+            <p class="text-2xl font-semibold text-gray-600">{{ $stats['pending'] }}</p>
         </div>
-        <div class="bg-white p-4 rounded-xl border-l-4 border-[#CAF204] shadow">
+        <div class="bg-white p-4 rounded-xl border-l-4 border-[#A2AB73] shadow">
             <p class="text-xs text-gray-500 uppercase">Оплачены</p>
-            <p class="text-2xl font-black text-[#422168]">{{ $stats['paid'] }}</p>
+            <p class="text-2xl font-semibold text-[#2D3528]">{{ $stats['paid'] }}</p>
         </div>
         <div class="bg-white p-4 rounded-xl border-l-4 border-blue-500 shadow">
             <p class="text-xs text-gray-500 uppercase">В доставке</p>
-            <p class="text-2xl font-black text-blue-600">{{ $stats['shipping'] }}</p>
+            <p class="text-2xl font-semibold text-blue-600">{{ $stats['shipping'] }}</p>
         </div>
-        <div class="bg-white p-4 rounded-xl border-l-4 border-[#0D7D4C] shadow">
+        <div class="bg-white p-4 rounded-xl border-l-4 border-[#CC3A63] shadow">
             <p class="text-xs text-gray-500 uppercase">Вручены</p>
-            <p class="text-2xl font-black text-[#0D7D4C]">{{ $stats['delivered'] }}</p>
+            <p class="text-2xl font-semibold text-[#CC3A63]">{{ $stats['delivered'] }}</p>
         </div>
         <div class="bg-white p-4 rounded-xl border-l-4 border-red-500 shadow">
             <p class="text-xs text-gray-500 uppercase">Отменены</p>
-            <p class="text-2xl font-black text-red-600">{{ $stats['cancelled'] }}</p>
+            <p class="text-2xl font-semibold text-red-600">{{ $stats['cancelled'] }}</p>
         </div>
-        <div class="bg-white p-4 rounded-xl border-l-4 border-[#00F3B5] shadow">
+        <div class="bg-white p-4 rounded-xl border-l-4 border-[#F9F0E0] shadow">
             <p class="text-xs text-gray-500 uppercase">Выручка</p>
-            <p class="text-2xl font-black text-[#0D7D4C]">{{ number_format($stats['revenue'], 0, '.', ' ') }} ₽</p>
+            <p class="text-2xl font-semibold text-[#CC3A63]">{{ number_format($stats['revenue'], 0, '.', ' ') }} ₽</p>
         </div>
         <div class="bg-white p-4 rounded-xl border-l-4 border-red-700 shadow">
             <p class="text-xs text-gray-500 uppercase">Удалено</p>
-            <p class="text-2xl font-black text-red-700">{{ $stats['trashed'] }}</p>
+            <p class="text-2xl font-semibold text-red-700">{{ $stats['trashed'] }}</p>
         </div>
     </div>
 
     {{-- Фильтры --}}
-    <form action="{{ route('admin.orders.index') }}" method="GET" class="bg-white p-6 rounded-2xl shadow-lg mb-6 border-2 border-[#E8FC8C] grid grid-cols-1 md:grid-cols-5 gap-4">
+    <form action="{{ route('admin.orders.index') }}" method="GET" class="bg-white p-6 rounded-2xl shadow-lg mb-6 border-2 border-[#F9F0E0] grid grid-cols-1 md:grid-cols-5 gap-4">
         <div>
-            <label class="block text-sm font-bold mb-1 text-[#0D7D4C]">Поиск по клиенту</label>
+            <label class="block text-sm font-bold mb-1 text-[#CC3A63]">Поиск по клиенту</label>
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Имя, фамилия, email..."
-                   class="w-full border-2 border-[#E8FC8C] p-2 rounded-lg focus:border-[#CAF204] focus:outline-none">
+                   class="w-full border-2 border-[#F9F0E0] p-2 rounded-lg focus:border-[#A2AB73] focus:outline-none">
         </div>
         <div>
-            <label class="block text-sm font-bold mb-1 text-[#0D7D4C]">№ заказа</label>
+            <label class="block text-sm font-bold mb-1 text-[#CC3A63]">№ заказа</label>
             <input type="number" name="order_id" value="{{ request('order_id') }}" placeholder="ID"
-                   class="w-full border-2 border-[#E8FC8C] p-2 rounded-lg focus:border-[#CAF204] focus:outline-none">
+                   class="w-full border-2 border-[#F9F0E0] p-2 rounded-lg focus:border-[#A2AB73] focus:outline-none">
         </div>
         <div>
-            <label class="block text-sm font-bold mb-1 text-[#0D7D4C]">Статус</label>
-            <select name="status" class="w-full border-2 border-[#E8FC8C] p-2 rounded-lg focus:border-[#CAF204] focus:outline-none">
+            <label class="block text-sm font-bold mb-1 text-[#CC3A63]">Статус</label>
+            <select name="status" class="w-full border-2 border-[#F9F0E0] p-2 rounded-lg focus:border-[#A2AB73] focus:outline-none">
                 <option value="">Все</option>
                 <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Ожидает оплаты</option>
                 <option value="paid" {{ request('status') === 'paid' ? 'selected' : '' }}>Оплачен</option>
@@ -67,15 +67,15 @@
             <label class="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" name="trashed" value="1" 
                        {{ $showTrashed ? 'checked' : '' }}
-                       class="w-5 h-5 accent-[#0D7D4C]">
-                <span class="text-sm font-bold text-[#0D7D4C]">Показать удалённые</span>
+                       class="w-5 h-5 accent-[#CC3A63]">
+                <span class="text-sm font-bold text-[#CC3A63]">Показать удалённые</span>
             </label>
         </div>
         <div class="flex items-end gap-2">
-            <button type="submit" class="flex-1 bg-[#0D7D4C] text-white font-bold py-2 rounded-lg btn-animated hover:bg-[#422168]">
+            <button type="submit" class="flex-1 bg-[#CC3A63] text-white font-bold py-2 rounded-lg btn-animated hover:bg-[#2D3528]">
                 Применить
             </button>
-            <a href="{{ route('admin.orders.index') }}" class="bg-gray-200 text-[#422168] font-bold py-2 px-4 rounded-lg btn-animated">
+            <a href="{{ route('admin.orders.index') }}" class="bg-gray-200 text-[#2D3528] font-bold py-2 px-4 rounded-lg btn-animated">
                 Сброс
             </a>
         </div>
@@ -83,15 +83,15 @@
 
 
     @if(session('info'))
-        <div class="bg-blue-100 text-blue-700 p-4 rounded-xl font-bold mb-6 border-l-8 border-blue-500">
+        <div class="bg-blue-100 text-blue-700 p-4 rounded-xl font-bold mb-6 border-l-2 border-blue-500">
             {{ session('info') }}
         </div>
     @endif
 
     {{-- Таблица заказов --}}
-    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-[#E8FC8C]">
+    <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-[#F9F0E0]">
         <table class="w-full">
-            <thead class="bg-[#422168] text-white">
+            <thead class="bg-[#2D3528] text-white">
                 <tr>
                     <th class="p-4 text-left">№</th>
                     <th class="p-4 text-left">Клиент</th>
@@ -104,14 +104,14 @@
             </thead>
             <tbody>
                 @forelse($orders as $order)
-                    <tr class="border-b border-[#E8FC8C] hover:bg-[#E8FC8C]/20 transition-colors {{ $order->trashed() ? 'opacity-60 bg-red-50' : '' }}">
+                    <tr class="border-b border-[#F9F0E0] hover:bg-[#F9F0E0]/20 transition-colors {{ $order->trashed() ? 'opacity-60 bg-red-50' : '' }}">
                         <td class="p-4 font-bold">
-                            <a href="{{ route('admin.orders.show', $order) }}" class="text-[#0D7D4C] hover:underline">
+                            <a href="{{ route('admin.orders.show', $order) }}" class="text-[#CC3A63] hover:underline">
                                 #{{ $order->id }}
                             </a>
                         </td>
                         <td class="p-4">
-                            <div class="font-bold text-[#422168]">{{ $order->user->name }} {{ $order->user->last_name }}</div>
+                            <div class="font-bold text-[#2D3528]">{{ $order->user->name }} {{ $order->user->last_name }}</div>
                             <div class="text-xs text-gray-500">{{ $order->user->email }}</div>
                             <div class="text-xs text-gray-500">{{ $order->user->phone }}</div>
                         </td>
@@ -121,7 +121,7 @@
                                 {{ $order->items->map(fn($i) => $i->product_name)->join(', ') }}
                             </div>
                         </td>
-                        <td class="p-4 font-black text-[#0D7D4C] text-lg">{{ number_format($order->total_amount, 0, '.', ' ') }} ₽</td>
+                        <td class="p-4 font-semibold text-[#CC3A63] text-lg">{{ number_format($order->total_amount, 2, ',', ' ') }} ₽</td>
                         <td class="p-4">
                             @include('admin.orders._status_badge', ['status' => $order->status])
                         </td>
@@ -145,7 +145,7 @@
                                     <form action="{{ route('admin.orders.restore', $order->id) }}" method="POST">
                                         @csrf
                                         @method('PATCH')
-                                        <button type="submit" class="bg-[#0D7D4C] text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-[#422168]">
+                                        <button type="submit" class="bg-[#CC3A63] text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-[#2D3528]">
                                             Восстановить
                                         </button>
                                     </form>
@@ -160,44 +160,8 @@
                                 </div>
                             @else
                                 {{-- БЛОК ДЛЯ АКТИВНЫХ ЗАКАЗОВ --}}
-                                <form action="{{ route('admin.orders.update-status', $order) }}" method="POST" class="flex gap-2 items-center">
-                                    @csrf
-                                    @method('PATCH')
-                                    <select name="status" class="border-2 border-[#E8FC8C] rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#CAF204]"
-                                            @if(empty($order->getAllowedNextStatuses())) disabled @endif>
-                                        <option value="{{ $order->status }}" selected>{{ $order->status_label }}</option>
-                                        @foreach($order->getAllowedNextStatuses() as $allowedStatus)
-                                            <option value="{{ $allowedStatus }}">
-                                                @if($allowedStatus === $order->previous_status && $order->canRevert())
-                                                    ← Откатить ({{ $order->getRevertMinutesLeft() }} мин)
-                                                @else
-                                                    → {{ match($allowedStatus) {
-                                                        'pending' => 'Ожидает',
-                                                        'paid' => 'Оплачен',
-                                                        'shipping' => 'В доставке',
-                                                        'delivered' => 'Вручен',
-                                                        'cancelled' => 'Отменен',
-                                                    } }}
-                                                @endif
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <button type="submit" 
-                                            class="bg-[#0D7D4C] text-white px-3 py-1 rounded-lg text-sm font-bold hover:bg-[#422168] transition-colors
-                                                   {{ empty($order->getAllowedNextStatuses()) ? 'opacity-50 cursor-not-allowed' : '' }}"
-                                            {{ empty($order->getAllowedNextStatuses()) ? 'disabled' : '' }}>
-                                        OK
-                                    </button>
-                                </form>
-                                
-                                @if($order->canRevert())
-                                    <div class="mt-2 text-xs text-blue-600 font-bold">
-                                        ⏱ Можно откатить: {{ $order->getRevertMinutesLeft() }} мин
-                                    </div>
-                                @endif
-                                
                                 <div class="flex gap-3 mt-2">
-                                    <a href="{{ route('admin.orders.show', $order) }}" class="text-xs text-[#422168] hover:text-[#0D7D4C] font-bold">
+                                    <a href="{{ route('admin.orders.show', $order) }}" class="button button-small">
                                         Подробнее →
                                     </a>
                                     <button type="button" onclick="document.getElementById('delete-modal-{{ $order->id }}').classList.remove('hidden')" 
@@ -208,8 +172,8 @@
 
                                 {{-- Модальное окно подтверждения удаления --}}
                                 <div id="delete-modal-{{ $order->id }}" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                                    <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-md w-full mx-4 border-4 border-red-500">
-                                        <h3 class="text-xl font-black text-[#422168] mb-4">Удаление заказа №{{ $order->id }}</h3>
+                                    <div class="bg-white p-6 rounded-2xl shadow-sm max-w-md w-full mx-4 border border-red-500">
+                                        <h3 class="text-xl font-semibold text-[#2D3528] mb-4">Удаление заказа №{{ $order->id }}</h3>
                                         <p class="text-sm text-gray-600 mb-4">
                                             Заказ будет перемещён в корзину удалённых. Его можно будет восстановить в любой момент.
                                         </p>
@@ -230,7 +194,7 @@
                                                 </button>
                                                 <button type="button" 
                                                         onclick="document.getElementById('delete-modal-{{ $order->id }}').classList.add('hidden')"
-                                                        class="flex-1 bg-gray-200 text-[#422168] font-bold py-2 rounded-lg hover:bg-gray-300">
+                                                        class="flex-1 bg-gray-200 text-[#2D3528] font-bold py-2 rounded-lg hover:bg-gray-300">
                                                     Отмена
                                                 </button>
                                             </div>

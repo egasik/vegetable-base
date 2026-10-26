@@ -1,7 +1,10 @@
 <?php
 
 return [
-
+    'yandex' => [
+    'maps_key' => env('YANDEX_MAPS_API_KEY'),
+    'geocoder_key' => env('YANDEX_GEOCODER_API_KEY'),
+],
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

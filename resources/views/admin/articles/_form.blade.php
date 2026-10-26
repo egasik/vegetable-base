@@ -1,33 +1,33 @@
 <div class="space-y-6">
     {{-- Заголовок статьи --}}
-    <div class="bg-white p-6 rounded-2xl shadow-lg border-4 border-[#E8FC8C]">
-        <label class="block text-lg font-black mb-2 text-[#0D7D4C]">📝 Заголовок статьи *</label>
+    <div class="bg-white p-6 rounded-2xl shadow-lg border border-[#F9F0E0]">
+        <label class="block text-lg font-semibold mb-2 text-[#CC3A63]">📝 Заголовок статьи *</label>
         <input type="text" name="title" id="article-title" value="{{ old('title', $article->title ?? '') }}" required
-               class="w-full border-2 border-[#E8FC8C] p-3 rounded-lg focus:border-[#CAF204] focus:outline-none text-lg font-bold">
+               class="w-full border-2 border-[#F9F0E0] p-3 rounded-lg focus:border-[#A2AB73] focus:outline-none text-lg font-bold">
         @error('title') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
 
         <label class="flex items-center gap-2 mt-4 cursor-pointer">
             <input type="hidden" name="is_published" value="0">
             <input type="checkbox" name="is_published" value="1" {{ old('is_published', $article->is_published ?? false) ? 'checked' : '' }}
-                   class="w-5 h-5 accent-[#0D7D4C]">
-            <span class="font-bold text-[#422168]">Опубликовать сразу</span>
+                   class="w-5 h-5 accent-[#CC3A63]">
+            <span class="font-bold text-[#2D3528]">Опубликовать сразу</span>
         </label>
     </div>
 
     {{-- Панель инструментов конструктора --}}
-    <div class="bg-[#422168] p-4 rounded-2xl shadow-lg sticky top-4 z-40">
-        <p class="text-[#CAF204] font-bold mb-3 text-sm">🧱 Добавьте блоки в статью:</p>
+    <div class="bg-[#2D3528] p-4 rounded-2xl shadow-lg sticky top-4 z-40">
+        <p class="text-[#A2AB73] font-bold mb-3 text-sm">🧱 Добавьте блоки в статью:</p>
         <div class="flex flex-wrap gap-2">
-            <button type="button" onclick="addBlock('header')" class="bg-[#CAF204] text-[#422168] px-4 py-2 rounded-lg btn-animated font-bold text-sm">
+            <button type="button" onclick="addBlock('header')" class="bg-[#A2AB73] text-[#2D3528] px-4 py-2 rounded-lg btn-animated font-bold text-sm">
                 📌 Заголовок
             </button>
-            <button type="button" onclick="addBlock('text')" class="bg-[#00F3B5] text-[#422168] px-4 py-2 rounded-lg btn-animated font-bold text-sm">
+            <button type="button" onclick="addBlock('text')" class="bg-[#F9F0E0] text-[#2D3528] px-4 py-2 rounded-lg btn-animated font-bold text-sm">
                 📝 Текст
             </button>
-            <button type="button" onclick="addBlock('image')" class="bg-[#0D7D4C] text-white px-4 py-2 rounded-lg btn-animated font-bold text-sm">
+            <button type="button" onclick="addBlock('image')" class="bg-[#CC3A63] text-white px-4 py-2 rounded-lg btn-animated font-bold text-sm">
                 🖼 Изображение
             </button>
-            <button type="button" onclick="openPreviewModal()" class="ml-auto bg-white text-[#422168] px-4 py-2 rounded-lg btn-animated font-bold text-sm">
+            <button type="button" onclick="openPreviewModal()" class="ml-auto bg-white text-[#2D3528] px-4 py-2 rounded-lg btn-animated font-bold text-sm">
                 👁 Предпросмотр и публикация
             </button>
         </div>
@@ -40,7 +40,7 @@
 
     {{-- Скрытый контейнер для ошибок валидации --}}
     @if($errors->any())
-        <div class="bg-red-100 border-l-8 border-red-500 text-red-700 p-4 rounded-xl">
+        <div class="bg-red-100 border-l-2 border-red-500 text-red-700 p-4 rounded-xl">
             <p class="font-bold">⚠️ Исправьте ошибки:</p>
             <ul class="list-disc list-inside text-sm mt-2">
                 @foreach($errors->all() as $error)
@@ -53,20 +53,20 @@
 
 {{-- МОДАЛЬНОЕ ОКНО ПРЕДПРОСМОТРА --}}
 <div id="preview-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
-    <div class="bg-[#E8FC8C] rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border-4 border-[#CAF204]">
-        <div class="sticky top-0 bg-[#422168] text-white p-4 rounded-t-3xl flex justify-between items-center">
-            <h2 class="text-xl font-black">👁 Предпросмотр статьи</h2>
-            <button onclick="closePreviewModal()" class="text-2xl hover:text-[#CAF204]">×</button>
+    <div class="bg-[#F9F0E0] rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-sm border border-[#A2AB73]">
+        <div class="sticky top-0 bg-[#2D3528] text-white p-4 rounded-t-3xl flex justify-between items-center">
+            <h2 class="text-xl font-semibold">👁 Предпросмотр статьи</h2>
+            <button onclick="closePreviewModal()" class="text-2xl hover:text-[#A2AB73]">×</button>
         </div>
         <div class="p-6">
-            <h1 id="preview-title" class="text-3xl font-black text-[#422168] mb-6"></h1>
+            <h1 id="preview-title" class="text-3xl font-semibold text-[#2D3528] mb-6"></h1>
             <div id="preview-content" class="space-y-4"></div>
         </div>
-        <div class="sticky bottom-0 bg-white p-4 rounded-b-3xl flex gap-3 border-t-4 border-[#CAF204]">
-            <button type="button" onclick="closePreviewModal()" class="flex-1 bg-gray-300 text-[#422168] py-3 rounded-xl btn-animated font-bold">
+        <div class="sticky bottom-0 bg-white p-4 rounded-b-3xl flex gap-3 border-t-4 border-[#A2AB73]">
+            <button type="button" onclick="closePreviewModal()" class="flex-1 bg-gray-300 text-[#2D3528] py-3 rounded-xl btn-animated font-bold">
                 ← Вернуться к редактированию
             </button>
-            <button type="button" onclick="submitArticleForm()" class="flex-1 bg-[#0D7D4C] text-white py-3 rounded-xl btn-animated font-bold pulse-hover">
+            <button type="button" onclick="submitArticleForm()" class="flex-1 bg-[#CC3A63] text-white py-3 rounded-xl btn-animated font-bold ">
                 ✅ Да, опубликовать!
             </button>
         </div>
@@ -75,16 +75,16 @@
 
 {{-- ШАБЛОНЫ БЛОКОВ (скрытые, клонируются JS) --}}
 <template id="tpl-header">
-    <div class="block-item bg-white p-5 rounded-2xl shadow-lg border-l-8 border-[#CAF204]" data-type="header">
+    <div class="block-item bg-white p-5 rounded-2xl shadow-lg border-l-2 border-[#A2AB73]" data-type="header">
         <div class="flex justify-between items-center mb-3">
-            <span class="bg-[#CAF204] text-[#422168] px-3 py-1 rounded-full text-xs font-black">📌 ЗАГОЛОВОК</span>
+            <span class="bg-[#A2AB73] text-[#2D3528] px-3 py-1 rounded-full text-xs font-semibold">📌 ЗАГОЛОВОК</span>
             <div class="flex gap-1">
-                <button type="button" onclick="moveBlock(this, -1)" class="bg-[#E8FC8C] w-8 h-8 rounded-lg btn-animated" title="Вверх">↑</button>
-                <button type="button" onclick="moveBlock(this, 1)" class="bg-[#E8FC8C] w-8 h-8 rounded-lg btn-animated" title="Вниз">↓</button>
+                <button type="button" onclick="moveBlock(this, -1)" class="bg-[#F9F0E0] w-8 h-8 rounded-lg btn-animated" title="Вверх">↑</button>
+                <button type="button" onclick="moveBlock(this, 1)" class="bg-[#F9F0E0] w-8 h-8 rounded-lg btn-animated" title="Вниз">↓</button>
                 <button type="button" onclick="removeBlock(this)" class="bg-red-500 text-white w-8 h-8 rounded-lg btn-animated" title="Удалить">×</button>
             </div>
         </div>
-        <input type="text" class="block-content w-full border-2 border-[#E8FC8C] p-3 rounded-lg focus:border-[#CAF204] focus:outline-none font-bold text-lg" 
+        <input type="text" class="block-content w-full border-2 border-[#F9F0E0] p-3 rounded-lg focus:border-[#A2AB73] focus:outline-none font-bold text-lg" 
                placeholder="Введите заголовок (макс. 128 символов)" maxlength="128">
         <p class="text-xs text-gray-500 mt-1 counter">0 / 128</p>
         <p class="error-msg text-red-500 text-sm mt-1 hidden"></p>
@@ -92,16 +92,16 @@
 </template>
 
 <template id="tpl-text">
-    <div class="block-item bg-white p-5 rounded-2xl shadow-lg border-l-8 border-[#00F3B5]" data-type="text">
+    <div class="block-item bg-white p-5 rounded-2xl shadow-lg border-l-2 border-[#F9F0E0]" data-type="text">
         <div class="flex justify-between items-center mb-3">
-            <span class="bg-[#00F3B5] text-[#422168] px-3 py-1 rounded-full text-xs font-black">📝 ТЕКСТ</span>
+            <span class="bg-[#F9F0E0] text-[#2D3528] px-3 py-1 rounded-full text-xs font-semibold">📝 ТЕКСТ</span>
             <div class="flex gap-1">
-                <button type="button" onclick="moveBlock(this, -1)" class="bg-[#E8FC8C] w-8 h-8 rounded-lg btn-animated">↑</button>
-                <button type="button" onclick="moveBlock(this, 1)" class="bg-[#E8FC8C] w-8 h-8 rounded-lg btn-animated">↓</button>
+                <button type="button" onclick="moveBlock(this, -1)" class="bg-[#F9F0E0] w-8 h-8 rounded-lg btn-animated">↑</button>
+                <button type="button" onclick="moveBlock(this, 1)" class="bg-[#F9F0E0] w-8 h-8 rounded-lg btn-animated">↓</button>
                 <button type="button" onclick="removeBlock(this)" class="bg-red-500 text-white w-8 h-8 rounded-lg btn-animated">×</button>
             </div>
         </div>
-        <textarea class="block-content w-full border-2 border-[#E8FC8C] p-3 rounded-lg focus:border-[#CAF204] focus:outline-none" 
+        <textarea class="block-content w-full border-2 border-[#F9F0E0] p-3 rounded-lg focus:border-[#A2AB73] focus:outline-none" 
                   rows="4" placeholder="Введите текст (макс. 500 символов)" maxlength="500"></textarea>
         <p class="text-xs text-gray-500 mt-1 counter">0 / 500</p>
         <p class="error-msg text-red-500 text-sm mt-1 hidden"></p>
@@ -109,19 +109,19 @@
 </template>
 
 <template id="tpl-image">
-    <div class="block-item bg-white p-5 rounded-2xl shadow-lg border-l-8 border-[#0D7D4C]" data-type="image">
+    <div class="block-item bg-white p-5 rounded-2xl shadow-lg border-l-2 border-[#CC3A63]" data-type="image">
         <div class="flex justify-between items-center mb-3">
-            <span class="bg-[#0D7D4C] text-white px-3 py-1 rounded-full text-xs font-black">🖼 ИЗОБРАЖЕНИЕ</span>
+            <span class="bg-[#CC3A63] text-white px-3 py-1 rounded-full text-xs font-semibold">🖼 ИЗОБРАЖЕНИЕ</span>
             <div class="flex gap-1">
-                <button type="button" onclick="moveBlock(this, -1)" class="bg-[#E8FC8C] w-8 h-8 rounded-lg btn-animated">↑</button>
-                <button type="button" onclick="moveBlock(this, 1)" class="bg-[#E8FC8C] w-8 h-8 rounded-lg btn-animated">↓</button>
+                <button type="button" onclick="moveBlock(this, -1)" class="bg-[#F9F0E0] w-8 h-8 rounded-lg btn-animated">↑</button>
+                <button type="button" onclick="moveBlock(this, 1)" class="bg-[#F9F0E0] w-8 h-8 rounded-lg btn-animated">↓</button>
                 <button type="button" onclick="removeBlock(this)" class="bg-red-500 text-white w-8 h-8 rounded-lg btn-animated">×</button>
             </div>
         </div>
-        <input type="file" class="block-file w-full border-2 border-[#E8FC8C] p-2 rounded-lg" accept="image/jpeg,image/png,image/jpg,image/webp">
+        <input type="file" class="block-file w-full border-2 border-[#F9F0E0] p-2 rounded-lg" accept="image/jpeg,image/png,image/jpg,image/webp">
         <input type="hidden" class="block-existing-image">
         <div class="image-preview mt-2 hidden">
-            <img src="" class="max-h-48 rounded-lg border-2 border-[#CAF204]">
+            <img src="" class="max-h-48 rounded-lg border-2 border-[#A2AB73]">
         </div>
         <p class="text-xs text-gray-500 mt-1">JPEG, PNG, WEBP. Макс. 10 МБ.</p>
         <p class="error-msg text-red-500 text-sm mt-1 hidden"></p>
@@ -273,7 +273,7 @@ function openPreviewModal() {
 
         if (type === 'header') {
             const text = block.querySelector('.block-content').value;
-            html = `<h2 class="text-2xl font-black text-[#422168] border-l-8 border-[#CAF204] pl-4">${escapeHtml(text)}</h2>`;
+            html = `<h2 class="text-2xl font-semibold text-[#2D3528] border-l-2 border-[#A2AB73] pl-4">${escapeHtml(text)}</h2>`;
         } else if (type === 'text') {
             const text = block.querySelector('.block-content').value;
             html = `<p class="text-gray-700 leading-relaxed bg-white p-4 rounded-xl">${escapeHtml(text)}</p>`;
@@ -282,7 +282,7 @@ function openPreviewModal() {
             const existing = block.querySelector('.block-existing-image').value;
             const img = block.querySelector('.image-preview img');
             const src = file ? URL.createObjectURL(file) : (existing ? '/storage/' + existing : '');
-            html = `<div class="bg-[#E8FC8C] p-4 rounded-xl"><img src="${src}" class="w-full rounded-lg shadow-lg"></div>`;
+            html = `<div class="bg-[#F9F0E0] p-4 rounded-xl"><img src="${src}" class="w-full rounded-lg shadow-lg"></div>`;
         }
 
         previewContent.insertAdjacentHTML('beforeend', html);

@@ -1,0 +1,77 @@
+/* Admin presentation only; scoped to avoid changing the storefront. */
+.admin-shell{background:var(--cream);color:var(--ink);font-size:15px;align-items:flex-start}
+.admin-sidebar{width:260px;flex:0 0 260px;position:sticky;top:0;min-height:100vh;background:var(--sand);color:var(--ink);border-right:1px solid var(--line);box-shadow:none}
+.admin-sidebar>div{padding:30px 24px 24px;border-color:var(--line)}
+.admin-sidebar h1{color:var(--ink);font-size:23px;letter-spacing:-.04em;margin:0 0 6px}
+.admin-sidebar p{margin-bottom:0;color:var(--muted)}
+.admin-sidebar .text-white{color:var(--ink)}
+.admin-sidebar .text-xs{font-size:12px}
+.admin-sidebar .admin-avatar{background:var(--cream);border:1px solid var(--line);flex-shrink:0}
+.admin-navigation{padding:0 14px 24px;margin-top:22px}
+.admin-navigation>a,.admin-navigation>div>a,.admin-navigation button{display:flex;align-items:center;gap:8px;border-radius:12px;padding:13px 16px;margin-bottom:6px;font-size:14px;font-weight:600;color:var(--ink);transition:background .18s,color .18s}
+.admin-navigation>a:hover,.admin-navigation>div>a:hover,.admin-navigation button:hover{background:#e8e7d2;color:var(--ink)}
+.admin-navigation .admin-nav-active,.admin-navigation .admin-nav-active:hover{background:var(--berry);color:#fff;box-shadow:0 4px 12px #cc3a6318}
+.admin-navigation>div{border-color:var(--line);margin-top:24px;padding-top:18px}
+.admin-navigation button{width:100%;color:#a52b4e;background:transparent}
+.admin-navigation a>span{margin-left:auto;background:var(--cream);color:var(--ink);font-size:11px}
+.admin-main{min-width:0;width:calc(100% - 260px);padding:28px 40px 64px;max-width:1600px;margin:auto}
+.admin-topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:34px;color:var(--muted);font-size:13px}
+.admin-eyebrow{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase}
+.admin-section{font-size:12px;text-align:right}
+.admin-main h1{font-size:clamp(25px,2.6vw,36px);line-height:1.2;font-weight:600;letter-spacing:-.035em}
+.admin-main h2{font-size:23px;line-height:1.3}
+.admin-main h3{font-size:19px}
+.admin-main .bg-white{background:#fffcf6;border:1px solid var(--line)}
+.admin-main :is(.shadow,.shadow-lg,.shadow-sm){box-shadow:0 3px 14px #2d352805}
+.admin-main :is(.rounded-2xl,.rounded-xl){border-radius:16px}
+.admin-main .border-2{border-width:1px}
+.admin-main label{color:var(--ink);font-weight:600;font-size:13px}
+.admin-main :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea){min-width:0;max-width:100%;border:1px solid var(--line);background:var(--cream);border-radius:10px;padding:11px 13px;color:var(--ink);font:inherit;box-shadow:none}
+.admin-main textarea{min-height:110px;line-height:1.6}
+.admin-main input::placeholder,.admin-main textarea::placeholder{color:#818575}
+.admin-main :is(input,select,textarea):focus{border-color:var(--olive);outline:2px solid #a2ab7355;outline-offset:2px}
+.admin-main :is(input[type=checkbox],input[type=radio]){accent-color:var(--berry);flex-shrink:0}
+.admin-main input[type=file]::file-selector-button{border:0;border-radius:7px;background:var(--sand);color:var(--ink);padding:6px 10px;margin-right:12px}
+.admin-main .btn-animated{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;border-radius:10px;font-weight:600;line-height:1.4;transition:background .18s,box-shadow .18s}
+.admin-main .btn-animated:hover{filter:brightness(.96);box-shadow:0 3px 10px #2d352810}
+.admin-main .btn-animated:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+.admin-main [class~="bg-red-500"],.admin-main [class~="bg-red-600"]{background:#f7e4e8;color:#a0294b}
+.admin-main table{border-collapse:collapse;width:100%;font-size:14px}
+.admin-main thead{background:var(--sand);color:var(--muted);border-bottom:1px solid var(--line)}
+.admin-main th{font-size:11px;letter-spacing:.065em;text-transform:uppercase;font-weight:700;padding:16px}
+.admin-main td{padding:18px 16px;vertical-align:middle;border-color:var(--line)}
+.admin-main tbody tr{transition:background .18s}
+.admin-main tbody tr:hover{background:#f9f0e066;transform:none;box-shadow:none}
+.admin-main td .btn-animated{margin-top:3px;margin-bottom:3px;font-size:12px;padding:9px 12px;white-space:nowrap}
+.admin-main :is(.overflow-hidden,.overflow-x-auto):has(>table){overflow-x:auto}
+.admin-main .grid>div{min-width:0}
+.admin-main .grid>div>p.text-2xl{font-size:clamp(18px,1.8vw,26px);overflow-wrap:anywhere;margin-bottom:0}
+.admin-main form.flex:not(.flex-col){flex-wrap:wrap}
+.admin-main form.flex:not(.flex-col)>input{flex-basis:180px}
+.admin-main>.flex.justify-between{flex-wrap:wrap;gap:16px}
+@media(min-width:1024px) and (max-width:1350px){.admin-main .lg\:grid-cols-8{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:1000px){.admin-sidebar{width:220px;flex-basis:220px}.admin-main{width:calc(100% - 220px);padding:24px}.admin-topbar{margin-bottom:26px}}
+@media(max-width:760px){.admin-shell{display:block}.admin-sidebar{position:static;width:100%;min-height:0;border-right:0;border-bottom:1px solid var(--line)}.admin-sidebar>div{padding:20px}.admin-sidebar>div>div{display:none}.admin-navigation{display:flex;flex-wrap:wrap;gap:5px;margin:0;padding:0 14px 14px}.admin-navigation>a{margin:0;padding:10px 12px}.admin-navigation>div{display:flex;align-items:center;border:0;padding:0;margin:0;gap:5px}.admin-navigation>div>a,.admin-navigation button{margin:0;padding:10px 12px}.admin-main{width:100%;padding:24px 16px 40px}.admin-topbar{margin-bottom:24px;padding-bottom:16px;flex-wrap:wrap}.admin-main th,.admin-main td{padding:12px}.admin-main table{min-width:580px}.admin-main .md\:grid-cols-5{grid-template-columns:1fr}.admin-main .p-6,.admin-main .p-8{padding:18px}.admin-main .text-4xl{font-size:27px}}
+@media(prefers-reduced-motion:reduce){.admin-shell *{transition:none!important}}
+/* Clear action hierarchy and stable layouts for long order details. */
+.admin-main .button{background:var(--berry);color:white;border-radius:10px;white-space:nowrap}
+.admin-main .button:hover{background:#ad2b50}
+.admin-main .admin-help{display:block;font-size:12px;font-weight:400;color:var(--muted);margin-top:8px}
+.admin-main [hidden]{display:none!important}
+.admin-main fieldset{min-width:0}
+.admin-main #delivery-photo-field{padding:16px;border:1px dashed var(--olive);border-radius:12px;background:var(--cream)}
+.admin-main #delivery-photo-field input{display:block;width:100%;margin-top:10px}
+.admin-main .notice ul{margin:8px 0 0;padding-left:20px;list-style:disc}
+.admin-main .flex{min-width:0}
+.admin-main .flex>div{min-width:0}
+.admin-main .font-mono{overflow-wrap:anywhere}
+.admin-main td{overflow-wrap:anywhere}
+.admin-main td:last-child .flex{flex-wrap:wrap;align-items:center}
+.admin-main td .max-w-xs{max-width:180px}
+.admin-main .lg\:grid-cols-3{grid-template-columns:minmax(0,1fr) 300px}
+.admin-main .lg\:col-span-2{grid-column:auto}
+.admin-main .lg\:grid-cols-3>.space-y-6 .flex.justify-between{gap:12px;flex-wrap:wrap}
+.admin-main input:disabled,.admin-main select:disabled,.admin-main fieldset:disabled{opacity:.65}
+.admin-main .grid-cols-2:has(#comment-input){grid-template-columns:1fr}
+@media(max-width:1150px){.admin-main .lg\:grid-cols-3{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:760px){.admin-main .flex.items-center.justify-between{flex-wrap:wrap;gap:14px}.admin-main .fixed.inset-0>div{max-height:90vh;overflow-y:auto}.admin-main .grid-cols-2:has(#comment-input){grid-template-columns:1fr}}

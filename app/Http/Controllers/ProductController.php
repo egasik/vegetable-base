@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -14,7 +14,7 @@ class ProductController extends Controller
 
         // Поиск по названию
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
         // Фильтр по категории
         if ($request->filled('category_id')) {
@@ -28,7 +28,7 @@ class ProductController extends Controller
             $query->where('retail_price', '<=', $request->max_price);
         }
 
-        $products = $query->paginate(9)->withQueryString();
+        $products = $query->orderBy('name')->paginate(12)->withQueryString();
         $categories = Category::all();
 
         return view('products.index', compact('products', 'categories'));

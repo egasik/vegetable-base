@@ -1,31 +1,7 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
-    </div>
+@extends('layouts.app')
+@section('title', 'Подтверждение почты')
+@section('content')
+<section class="panel" style="max-width:520px;margin:auto"><p class="eyebrow">Перед оформлением заказа</p><h1 style="font-size:2rem">Подтвердите почту</h1><p>Запросите шестизначный код для {{ auth()->user()->email }}. Он действует 10 минут.</p><p>Осталось попыток: {{ $attemptsLeft }}. <span data-code-expiry="{{ $expiresAt }}"></span></p><form action="{{ route('verification.verify') }}" method="POST">@csrf<label>Код из письма<input style="display:block;width:100%;margin:12px 0" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><button class="button button-wide">Подтвердить</button></form><form action="{{ route('verification.send') }}" method="POST">@csrf<button class="text-button" data-code-resend="{{ $resendAt }}">Отправить код на почту</button></form><a href="{{ route('profile.edit') }}">Изменить адрес почты</a></section>
+@endsection
 
-    @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
-        </div>
-    @endif
 
-    <div class="mt-4 flex items-center justify-between">
-        <form method="POST" action="{{ route('verification.send') }}">
-            @csrf
-
-            <div>
-                <x-primary-button>
-                    {{ __('Resend Verification Email') }}
-                </x-primary-button>
-            </div>
-        </form>
-
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-
-            <button type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                {{ __('Log Out') }}
-            </button>
-        </form>
-    </div>
-</x-guest-layout>

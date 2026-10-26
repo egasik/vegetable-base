@@ -9,7 +9,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -28,7 +27,7 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
-            public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255', 'regex:/^[А-ЯЁ][а-яА-ЯёЁ]*$/u'],
@@ -37,9 +36,9 @@ class RegisteredUserController extends Controller
             'phone' => ['required', 'string', 'regex:/^\+7-\(\d{3}\)-\d{3}-\d{2}-\d{2}$/'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => [
-                'required', 
-                'string', 
-                'min:8', 
+                'required',
+                'string',
+                'min:8',
                 'confirmed',
                 'regex:/[a-zA-Z]/',      // Минимум 1 буква (русская или английская)
                 'regex:/[0-9]/',                 // Минимум 1 цифра
@@ -64,7 +63,7 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
         Auth::login($user);
 
-        return redirect(route('profile.edit', absolute: false))
+        return redirect(route('verification.notice', absolute: false))
             ->with('success', '🎉 Регистрация прошла успешно! Добро пожаловать в Овощную базу!');
     }
 }
