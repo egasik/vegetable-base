@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
 {
@@ -31,6 +32,13 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function getImageUrlAttribute(): string
+    {
+        return $this->image_path && Storage::disk('public')->exists($this->image_path)
+            ? asset('storage/'.ltrim($this->image_path, '/'))
+            : asset('images/product-placeholder.svg');
     }
 
     public function orderItems()

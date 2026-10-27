@@ -31,6 +31,7 @@ class EmailCodeController extends Controller
         } catch (ValidationException $e) {
             throw $e;
         } catch (\Throwable $e) {
+            report($e);
             return back()->with('error', 'Не удалось отправить письмо. Попробуйте позже.');
         }
 

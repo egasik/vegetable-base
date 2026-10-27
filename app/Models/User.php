@@ -23,6 +23,7 @@ class User extends Authenticatable implements MustVerifyEmail
         try {
             app(EmailCodeService::class)->send($this);
         } catch (\Throwable $e) {
+            report($e);
             session()->flash('error', 'Не удалось отправить код. Запросите его повторно на странице подтверждения.');
         }
     }

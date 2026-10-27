@@ -54,7 +54,22 @@ class CartController extends Controller
         $product = Product::findOrFail($cart[$cartKey]['product_id']);
         $line = $this->pricing->line($product, $cart[$cartKey]['purchase_type'], $data['quantity']);
         $cart[$cartKey]['quantity'] = $line['quantity'];
+        $quote = $this->pricing->quote($cart);
         session(['cart' => $cart]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Количество сохранено',
+                'count' => count($cart),
+                'total' => $quote['total'],
+                'weight' => $quote['weight'],
+                'items' => array_map(fn ($item) => [
+                    'cart_key' => $item['cart_key'],
+                    'quantity' => $item['quantity'],
+                    'subtotal' => $item['subtotal'],
+                ], $quote['items']),
+            ]);
+        }
 
         return $this->respond($request, 'Количество обновлено');
     }

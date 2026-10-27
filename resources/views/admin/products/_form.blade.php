@@ -73,7 +73,7 @@
         @if(isset($product) && $product->image_path)
             <div class="mt-3">
                 <p class="text-xs font-bold text-[#CC3A63] mb-1">Текущее фото:</p>
-                <img src="{{ asset('storage/' . $product->image_path) }}" class="h-32 w-32 object-cover rounded-lg border-2 border-[#A2AB73]">
+                <img src="{{ $product->image_url }}" class="h-32 w-32 object-cover rounded-lg border-2 border-[#A2AB73]">
             </div>
         @endif
     </div>

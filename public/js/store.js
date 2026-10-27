@@ -4,6 +4,10 @@ document.querySelectorAll('[data-add-to-cart]').forEach(form => {
         const button = form.querySelector('button[type="submit"]');
         if (button.disabled) return;
         button.disabled = true;
+        const originalLabel = button.textContent;
+        button.textContent = 'Добавляем…';
+        button.classList.add('is-loading');
+        button.setAttribute('aria-busy', 'true');
         const toast = document.getElementById('store-toast');
         try {
             const response = await fetch(form.action, {method: 'POST', body: new FormData(form), headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'}});
@@ -12,9 +16,24 @@ document.querySelectorAll('[data-add-to-cart]').forEach(form => {
             if (!response.ok) throw new Error(Object.values(data.errors || {}).flat()[0] || data.message || 'Не удалось добавить товар.');
             document.querySelectorAll('[data-cart-count]').forEach(node => node.textContent = data.count);
             toast.textContent = data.message;
+            const cartLink = document.createElement('a');
+            cartLink.href = '/cart';
+            cartLink.textContent = 'Перейти в корзину ↗';
+            toast.appendChild(cartLink);
         } catch (error) { toast.textContent = error.message || 'Проверьте соединение и попробуйте снова.'; }
-        finally { button.disabled = false; toast.hidden = false; clearTimeout(window.storeToastTimer); window.storeToastTimer = setTimeout(() => toast.hidden = true, 5000); }
+        finally { button.disabled = false; button.textContent = originalLabel; button.classList.remove('is-loading'); button.removeAttribute('aria-busy'); toast.hidden = false; clearTimeout(window.storeToastTimer); window.storeToastTimer = setTimeout(() => toast.hidden = true, 8000); }
     });
+});
+
+// Also handle an unavailable file or a missing public storage link gracefully.
+document.querySelectorAll('img[data-product-image]').forEach(image => {
+    const fallback = () => {
+        if (image.dataset.fallbackApplied) return;
+        image.dataset.fallbackApplied = 'true';
+        image.src = '/images/product-placeholder.svg';
+    };
+    image.addEventListener('error', fallback);
+    if (image.complete && image.naturalWidth === 0) fallback();
 });
 
 // Server limits remain authoritative; this timer explains when the next action is available.
